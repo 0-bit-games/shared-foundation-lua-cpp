@@ -1,0 +1,3 @@
+[submodule "src/fart"]
+	path = src/fart
+	url = git@github.com:trenskow/fart

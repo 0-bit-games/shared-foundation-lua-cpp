@@ -1,0 +1,14 @@
+CMakeCache.txt
+CMakeFiles
+Makefile
+cmake_install.cmake
+.vscode/c_cpp_properties.json
+build/
+libgame.a
+bin
+lib
+.ninja_*
+build.ninja
+.DS_Store
+.build/
+.swiftpm/
