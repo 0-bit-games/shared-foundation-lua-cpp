@@ -1,24 +1,25 @@
 //
-// lua-exception.hpp
+// runtime-exception.hpp
 // fart-lua
 //
 // Created by Kristian Trenskow on 2023/11/06
 // See license in LICENSE.
 //
 
-#ifndef lau_exception_hpp
-#define lau_exception_hpp
+#ifndef fart_lua_runtime_exception_hpp
+#define fart_lua_runtime_exception_hpp
 
-#include "./fart/fart.hpp"
+#include "../fart/fart.hpp"
 
 namespace fart::lua::exceptions {
 
-	class LuaException : public fart::exceptions::Exception {
+	class RuntimeException : public fart::exceptions::Exception {
 
 		public:
-			LuaException(
+
+			RuntimeException(
 				const String& message);
-			virtual ~LuaException();
+			virtual ~RuntimeException();
 
 			virtual const char* description() const override;
 			virtual Exception* clone() const override;
@@ -33,4 +34,4 @@ namespace fart::lua::exceptions {
 
 }
 
-#endif /* lau_exception_hpp */
+#endif /* fart_lua_runtime_exception_hpp */

@@ -8,9 +8,10 @@
 			"type": "lldb",
 			"request": "launch",
 			"name": "Debug",
-			"program": "${workspaceFolder}/fart-lua",
+			"program": "${workspaceFolder}/test",
 			"args": [],
-			"cwd": "${workspaceFolder}"
+			"cwd": "${workspaceFolder}",
+			"console": "internalConsole"
 		}
 	]
 }

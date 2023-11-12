@@ -3,8 +3,18 @@ cmake_minimum_required(VERSION 3.27)
 project(fart-lua)
 
 add_library(fart-lua
-	src/lua.cpp
-	src/lua-exception.cpp)
+	src/state.cpp
+	src/global.cpp
+	src/exceptions/runtime-exception.cpp
+	src/exceptions/not-supported-exception.cpp
+	src/exceptions/unexpected-type-exception.cpp
+	src/types/type.cpp
+	src/types/boolean.cpp
+	src/types/number.cpp
+	src/types/string.cpp
+	src/types/function.cpp
+	src/types/caller.cpp
+	src/types/table.cpp)
 
 if (NOT DEFINED LUA_VERSION)
 	set(LUA_VERSION "5.4.6")
@@ -32,8 +42,7 @@ execute_process(
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}/build/lua-${LUA_VERSION}/src)
 
-target_link_libraries(fart-lua
-${CMAKE_CURRENT_SOURCE_DIR}/build/lua-${LUA_VERSION}/src/liblua.a)
+target_link_libraries(fart-lua ${CMAKE_CURRENT_SOURCE_DIR}/build/lua-${LUA_VERSION}/src/liblua.a)
 
 add_definitions(-DFART_NO_IO -DFART_NO_SOCKET)
 
