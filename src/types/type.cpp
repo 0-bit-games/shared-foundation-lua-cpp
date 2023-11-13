@@ -60,6 +60,10 @@ Strong<Type> LuaType::fart(
 			return Strong<String>(
 				((LuaString&)*this).value())
 				.as<Type>();
+		case LuaType::Kind::table:
+			return Strong<Type>(
+				((LuaTable&)*this).dictionary()
+				.as<Type>());
 		default:
 			break;
 	}

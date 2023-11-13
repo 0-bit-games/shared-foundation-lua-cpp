@@ -49,7 +49,8 @@ State::~State() {
 }
 
 Strong<Global> State::global() {
-	return Strong<Global>(*this);
+	return Strong<Global>(
+		*this);
 }
 
 Strong<LuaType> State::nil() {
