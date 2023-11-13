@@ -60,3 +60,6 @@ set_target_properties(fart-lua
 	ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build"
 	LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build"
 	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
+
+target_precompile_headers(fart-lua PRIVATE
+	${FART_SRC}/fart.hpp)
