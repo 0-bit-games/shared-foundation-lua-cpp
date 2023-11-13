@@ -9,7 +9,7 @@
 #ifndef fart_lua_type_hpp
 #define fart_lua_type_hpp
 
-#include "../fart/fart.hpp"
+#include <fart.hpp>
 
 #include "../state.hpp"
 

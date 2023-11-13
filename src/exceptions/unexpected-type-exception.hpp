@@ -9,7 +9,7 @@
 #ifndef fart_lua_unexpected_type_exception_hpp
 #define fart_lua_unexpected_type_exception_hpp
 
-#include "../fart/fart.hpp"
+#include <fart.hpp>
 
 #include "../types/types.hpp"
 

@@ -16,6 +16,10 @@ add_library(fart-lua
 	src/types/caller.cpp
 	src/types/table.cpp)
 
+if (NOT DEFINED FART_SRC)
+	message(FATAL_ERROR "Missing fart source directory (FART_SRC).")
+endif()
+
 if (NOT DEFINED LUA_VERSION)
 	set(LUA_VERSION "5.4.6")
 endif()
@@ -39,8 +43,11 @@ execute_process(
 	COMMAND ${LUA_MAKE_PREFIX} make all test
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build/lua-${LUA_VERSION})
 
-include_directories(
-	${CMAKE_CURRENT_SOURCE_DIR}/build/lua-${LUA_VERSION}/src)
+target_include_directories(fart-lua SYSTEM
+	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/build/lua-${LUA_VERSION}/src
+	PUBLIC ${FART_SRC})
+
+message(STATUS ${FART_SRC})
 
 target_link_libraries(fart-lua ${CMAKE_CURRENT_SOURCE_DIR}/build/lua-${LUA_VERSION}/src/liblua.a)
 
