@@ -5,6 +5,7 @@ project(fart-lua)
 add_library(fart-lua
 	src/state.cpp
 	src/global.cpp
+	src/exceptions/compiler-exception.cpp
 	src/exceptions/runtime-exception.cpp
 	src/exceptions/not-supported-exception.cpp
 	src/exceptions/unexpected-type-exception.cpp

@@ -35,10 +35,15 @@ namespace fart::lua {
 		public:
 
 			static Strong<State> fromFile(
-				const String& filename);
+				const String& filename
+			) noexcept(false);
 
 			static Strong<State> fromString(
-				const String& string);
+				const String& string
+			) noexcept(false);
+
+			State(
+				const State& other) = delete;
 
 			virtual ~State();
 

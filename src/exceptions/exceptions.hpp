@@ -9,6 +9,7 @@
 #ifndef fart_lua_exceptions_hpp
 #define fart_lua_exceptions_hpp
 
+#include "./compiler-exception.hpp"
 #include "./runtime-exception.hpp"
 #include "./not-supported-exception.hpp"
 #include "./unexpected-type-exception.hpp"

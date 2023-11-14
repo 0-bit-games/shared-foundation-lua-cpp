@@ -22,24 +22,28 @@ using namespace fart::lua::exceptions;
 
 Strong<State> State::fromFile(
 	const String& filename
-) {
+) noexcept(false) {
 	return Strong<State>()
 		.with([&](State& state) {
 			filename
 				.withCString([&](const char* filename) {
-					luaL_dofile(state, filename);
+					if (luaL_dofile(state, filename) != 0) {
+						throw CompilerException();
+					}
 				});
 		});
 }
 
 Strong<State> State::fromString(
 	const String& string
-) {
+) noexcept(false) {
 	return Strong<State>()
 		.with([&](State& state) {
 			string
 				.withCString([&](const char* string) {
-					luaL_dostring(state, string);
+					if (luaL_dostring(state, string) != 0) {
+						throw CompilerException();
+					}
 				});
 		});
 }
