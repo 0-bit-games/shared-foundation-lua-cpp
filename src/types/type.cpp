@@ -90,6 +90,18 @@ Strong<LuaTable> LuaType::table() const noexcept(false) {
 	return _to<LuaTable>(this, Kind::table);
 }
 
+bool LuaType::operator==(
+	nullptr_t
+) const {
+	return this->kind() == Kind::nil;
+}
+
+bool LuaType::operator!=(
+	nullptr_t
+) const {
+	return !(this->operator==(nullptr));
+}
+
 LuaType::LuaType(
 	State& state
 ) : _state(state),

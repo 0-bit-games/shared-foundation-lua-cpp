@@ -9,6 +9,7 @@
 #ifndef fart_lua_hpp
 #define fart_lua_hpp
 
+#include "./exceptions/exceptions.hpp"
 #include "./state.hpp"
 #include "./types/types.hpp"
 #include "./global.hpp"

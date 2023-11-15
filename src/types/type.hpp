@@ -56,6 +56,14 @@ namespace fart::lua::types {
 			Strong<LuaFunction> function() const noexcept(false);
 			Strong<LuaTable> table() const noexcept(false);
 
+			bool operator==(
+				nullptr_t
+			) const;
+
+			bool operator!=(
+				nullptr_t
+			) const;
+
 		protected:
 
 			LuaType(
