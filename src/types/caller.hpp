@@ -40,16 +40,10 @@ namespace fart::lua::types {
 				LuaString& value);
 
 			Caller& argument(
-				const String& value);
-
-			Caller& argument(
 				LuaTable& value);
 
 			Caller& argument(
-				const Dictionary<Type>& value);
-
-			Caller& argument(
-				const Array<>& value);
+				const Type& value);
 
 			Strong<LuaType> exec() noexcept(false);
 

@@ -19,7 +19,9 @@ namespace fart::lua {
 		class LuaBoolean;
 		class LuaNumber;
 		class LuaString;
+		class LuaFunction;
 		class LuaTable;
+		class LuaLightUserData;
 		class Caller;
 	}
 
@@ -63,6 +65,9 @@ namespace fart::lua {
 			Strong<types::LuaString> string(
 				const String& value);
 
+			Strong<types::LuaFunction> function(
+				const function<Strong<Type>(const Array<Type>&)> function);
+
 			Strong<types::LuaTable> table();
 
 			Strong<types::LuaTable> table(
@@ -73,6 +78,9 @@ namespace fart::lua {
 				const Array<>& table
 			) noexcept(false);
 
+			Strong<types::LuaLightUserData> lightUserData(
+				void* value);
+
 			Strong<types::LuaType> fart(
 				const Type& value
 			) noexcept(false);
@@ -81,7 +89,11 @@ namespace fart::lua {
 				return this->_l;
 			}
 
-			void printStack() const;
+#ifdef FART_LUA_STACK_DEBUG
+			void printStack(
+				const String& header
+			) const;
+#endif /* FART_LUA_STACK_DEBUG */
 
 		private:
 
@@ -91,6 +103,11 @@ namespace fart::lua {
 			};
 
 			State();
+
+#ifdef FART_LUA_STACK_DEBUG
+			Array<String> _fartStackDescriptions() const;
+			Array<String> _luaStackDescriptions() const;
+#endif /* FART_LUA_STACK_DEBUG */
 
 			void _flushAutoReplaced();
 

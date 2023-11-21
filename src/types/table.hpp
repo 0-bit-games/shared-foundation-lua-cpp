@@ -32,8 +32,7 @@ namespace fart::lua::types {
 
 			virtual LuaType::Kind kind() const override;
 
-			Strong<Array<>> array() noexcept(false);
-			Strong<Dictionary<Type>> dictionary() noexcept(false);
+			Strong<Type> value() noexcept(false);
 
 			Strong<LuaType> get(
 				LuaString& key);

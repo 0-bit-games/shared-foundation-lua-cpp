@@ -22,65 +22,25 @@ using namespace fart::lua::exceptions;
 LuaTable::~LuaTable() { }
 
 LuaType::Kind LuaTable::kind() const {
-	return LuaType::Kind::table;
-}
+	return LuaType::Kind::table;}
 
-Strong<Array<>> LuaTable::array() noexcept(false) {
-
-	Strong<Array<>> result;
-
-	for (size_t idx = 0 ; idx < this->count() ; idx++) {
-
-		auto value = this->get((int64_t)idx + 1);
-
-		switch (value->kind()) {
-			case LuaType::Kind::boolean:
-				result->append(Strong<Boolean>(value->boolean()->value())
-					.as<Type>());
-				break;
-			case LuaType::Kind::number:
-				if (value->number()->isInteger()) {
-					result->append(Strong<Integer>(value->number()->value())
-						.as<Type>());
-				} else {
-					result->append(Strong<Float>(value->number()->value())
-						.as<Type>());
-				}
-				break;
-			case LuaType::Kind::string:
-				result->append(value->string()->value()
-					.as<Type>());
-				break;
-			case LuaType::Kind::table:
-				result->append(value->table()->dictionary()
-					.as<Type>());
-				break;
-			default:
-				throw NotSupportedException();
-		}
-
-	}
-
-	return result;
-
-}
-
-Strong<Dictionary<Type>> LuaTable::dictionary() noexcept(false) {
+Strong<Type> LuaTable::value() noexcept(false) {
 
 	Strong<Dictionary<Type>> result;
 
 	auto nil = this->state().nil();
 
+	this->_restack();
+
 	nil->_restack(true);
 
 	Strong<LuaType> key = nullptr;
 
-	ssize_t tableStackIndex = this->stackIndex();
-
-	while (lua_next(this->state(), tableStackIndex)) {
+	while (lua_next(this->state(), -2)) {
 
 		key = LuaType::_pick(
-			this->state());
+			this->state(),
+			-2);
 
 		auto value = LuaType::_pick(
 			this->state());
@@ -95,7 +55,13 @@ Strong<Dictionary<Type>> LuaTable::dictionary() noexcept(false) {
 
 	this->state()._flushAutoReplaced();
 
-	return result;
+	if (result->keys()->every([](const Type& key, size_t idx) {
+		return key.kind() == Type::Kind::number && Number<size_t>::getValue(key) == idx + 1;
+	})) return result->values()
+		.as<Type>();
+
+	return result
+		.as<Type>();
 
 }
 
@@ -163,7 +129,8 @@ size_t LuaTable::count() {
 
 LuaTable::LuaTable(
 	State& state
-) : LuaType(state) { }
+) : LuaType(
+		state) { }
 
 Strong<LuaType> LuaTable::_get(
 	LuaType& key

@@ -19,6 +19,7 @@
 using namespace fart::lua;
 using namespace fart::lua::types;
 using namespace fart::lua::exceptions;
+using namespace fart::tools;
 
 Strong<State> State::fromFile(
 	const String& filename
@@ -98,6 +99,12 @@ Strong<LuaString> State::string(
 		});
 }
 
+Strong<LuaFunction> State::function(
+	const ::function<Strong<Type>(const Array<Type>&)> function
+) {
+
+}
+
 Strong<LuaTable> State::table() {
 	lua_newtable(*this);
 	return Strong<LuaTable>(
@@ -153,6 +160,14 @@ Strong<LuaTable> State::table(
 
 }
 
+Strong<LuaLightUserData> State::lightUserData(
+	void* value
+) {
+	lua_pushlightuserdata(*this, value);
+	return Strong<LuaLightUserData>(
+		*this);
+}
+
 Strong<LuaType> State::fart(
 	const Type& value
 ) noexcept(false) {
@@ -198,24 +213,124 @@ Strong<LuaType> State::fart(
 	throw NotSupportedException();
 }
 
-void State::printStack() const {
+#ifdef FART_LUA_STACK_DEBUG
 
-	if (this->_stack.length() == 0) {
+void State::printStack(
+	const String& header
+) const {
+
+	header.withCString([](const char* header) {
+		printf("%s\n----\n", header);
+	});
+
+	Array<Array<String>> columns = {
+		Array<String>({ "fart" }).appendingAll(this->_fartStackDescriptions()),
+		Array<String>({ "lua" }).appendingAll(this->_luaStackDescriptions())
+	};
+
+	size_t count = columns
+		.reduce<size_t>(0, [](size_t count, const Array<String>& column) {
+			return max<size_t>(count, column.count());
+		});
+
+	if (count == 0) {
 		printf(" (empty)\n");
 		return;
 	}
 
-	for (size_t idx = 0 ; idx < this->_stack.length() ; idx++) {
-		ssize_t index = (ssize_t)idx - (ssize_t)this->_stack.length();
-		printf(" > %zd %s %s\n", index, lua_typename(this->_l, lua_type(this->_l, index)), this->_stack[idx]->autoReplaced ? " (autoReplaced)" : "");
+	Data<size_t> columnWidths = columns
+		.mapToData<size_t>([](const Array<String>& column) {
+			return column
+				.reduce<size_t>(0, [](size_t width, const String& description) {
+					return max<size_t>(width, description.length() + 5);
+				});
+		});
+
+	columns
+		.forEach([&](Array<String>& column) {
+			while (column.count() < count) {
+				column.insertItemAtIndex(
+					Strong<String>(),
+					1);
+			}
+		});
+
+	for (size_t idx = 0 ; idx < count ; idx ++) {
+		columns
+			.forEach([&](const Array<String>& column, size_t columnIdx) {
+				column[idx]->withCString([&](const char* line) {
+					printf("%s", line);
+					for (size_t pad = column[idx]->length() ; pad < columnWidths[columnIdx] ; pad++) {
+						printf(" ");
+					}
+				});
+			});
+		printf("\n");
 	}
 
+	printf("----\n");
+
 }
+
+#endif /* FART_LUA_STACK_DEBUG */
 
 State::State(
 ) : _l(luaL_newstate()), _stack() {
 	luaL_openlibs(*this);
 }
+
+#ifdef FART_LUA_STACK_DEBUG
+
+Array<String> State::_fartStackDescriptions() const {
+
+	Array<String> descriptions;
+
+	for (ssize_t idx = this->_stack.length() - 1 ; idx >= 0 ; idx--) {
+
+		ssize_t index = (ssize_t)idx - (ssize_t)this->_stack.length();
+
+		StackItem* item = this->_stack[idx];
+
+		String description = String::format("%zd) (abandoned)", index);
+
+		if (item->value != nullptr) {
+
+			description = item->value->kindDescription()
+				.mapCString<String>([&](const char* kindDescription) {
+					return String::format("%zd) %s", index, kindDescription);
+				});
+
+		}
+
+		if (item->autoReplaced) {
+			description.append(" (autoReplaced)");
+		}
+
+		descriptions.append(
+			description);
+
+	}
+
+	return descriptions
+		.reversed();
+
+}
+
+Array<String> State::_luaStackDescriptions() const {
+
+	Array<String> descriptions;
+
+	for (ssize_t idx = 1 ; idx <= lua_gettop(this->_l) ; idx++) {
+		descriptions.append(
+			String::format("-%zd) %s", idx, lua_typename(this->_l, lua_type(this->_l, -idx))));
+	}
+
+	return descriptions
+		.reversed();
+
+}
+
+#endif /* FART_LUA_STACK_DEBUG */
 
 void State::_flushAutoReplaced() {
 	while (this->_stack.length() > 0 && this->_stack.last()->autoReplaced) {
@@ -253,6 +368,10 @@ size_t State::_pushStackItem(
 
 	this->_stack.append(item);
 
+#ifdef FART_LUA_STACK_DEBUG
+	this->printStack("Push Stack Item");
+#endif /* FART_LUA_STACK_DEBUG */
+
 	return this->_stack.length() - 1;
 
 }
@@ -276,6 +395,10 @@ void State::_popStackItem(
 
 	if (popCount > 0) lua_pop(*this, popCount);
 
+#ifdef FART_LUA_STACK_DEBUG
+	this->printStack("Pop Stack Item");
+#endif /* FART_LUA_STACK_DEBUG */
+
 }
 
 void State::_markAutoReplaced(
@@ -288,5 +411,9 @@ void State::_markAutoReplaced(
 			break;
 		}
 	}
+
+#if FART_LUA_STACK_DEBUG
+	this->printStack("Mark Auto Replaced");
+#endif /* FART_LUA_STACK_DEBUG */
 
 }

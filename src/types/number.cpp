@@ -30,4 +30,5 @@ double LuaNumber::value() const {
 
 LuaNumber::LuaNumber(
 	State& state
-) : LuaType(state) { }
+) : LuaType(
+		state) { }

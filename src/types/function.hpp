@@ -24,6 +24,24 @@ namespace fart::lua::types {
 
 		public:
 
+			class User {
+
+				public:
+
+					virtual ~User();
+
+				private:
+
+					static int _callback(lua_State* L);
+
+					User(
+						State& state,
+						const ::function<Strong<Type>(const Array<Type>& arguments)> function);
+
+					const ::function<Strong<Type>(const Array<Type>& arguments)> _function;
+
+			};
+
 			virtual ~LuaFunction();
 
 			virtual LuaType::Kind kind() const override;

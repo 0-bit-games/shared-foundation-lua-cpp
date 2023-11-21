@@ -15,7 +15,8 @@ add_library(fart-lua
 	src/types/string.cpp
 	src/types/function.cpp
 	src/types/caller.cpp
-	src/types/table.cpp)
+	src/types/table.cpp
+	src/types/light-user-data.cpp)
 
 if (NOT DEFINED FART_SRC)
 	message(FATAL_ERROR "Missing fart source directory (FART_SRC).")

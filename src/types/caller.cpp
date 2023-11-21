@@ -61,13 +61,6 @@ Caller& Caller::argument(
 }
 
 Caller& Caller::argument(
-	const String& value
-) {
-	return this->argument(
-		this->_function.state().string(value));
-}
-
-Caller& Caller::argument(
 	LuaTable& value
 ) {
 	this->_arguments.append(value);
@@ -75,17 +68,11 @@ Caller& Caller::argument(
 }
 
 Caller& Caller::argument(
-	const Dictionary<Type>& value
+	const Type& value
 ) {
-	return this->argument(
-		this->_function.state().table(value));
-}
-
-Caller& Caller::argument(
-	const Array<>& value
-) {
-	return this->argument(
-		this->_function.state().table(value));
+	this->_arguments.append(
+		this->_function.state().fart(value));
+	return *this;
 }
 
 Strong<LuaType> Caller::exec() {

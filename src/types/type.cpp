@@ -42,6 +42,20 @@ LuaType::Kind LuaType::kind() const {
 	return LuaType::Kind::nil;
 }
 
+String LuaType::kindDescription() const {
+	switch (this->kind()) {
+		case LuaType::Kind::nil: return "nil";
+		case LuaType::Kind::boolean: return "boolean";
+		case LuaType::Kind::number: return "number";
+		case LuaType::Kind::string: return "string";
+		case LuaType::Kind::function: return "function";
+		case LuaType::Kind::table: return "table";
+		case LuaType::Kind::lightUserData: return "lightUserData";
+		default: break;
+	}
+	throw NotSupportedException();
+}
+
 Strong<Type> LuaType::fart(
 ) const noexcept(false) {
 	switch (this->kind()) {
@@ -62,7 +76,7 @@ Strong<Type> LuaType::fart(
 				.as<Type>();
 		case LuaType::Kind::table:
 			return Strong<Type>(
-				((LuaTable&)*this).dictionary()
+				((LuaTable&)*this).value()
 				.as<Type>());
 		default:
 			break;
@@ -109,6 +123,13 @@ LuaType::LuaType(
 		this)) { }
 
 ssize_t LuaType::stackIndex() const {
+	return this->stackIndexOf(
+		this->_stackOffset);
+}
+
+ssize_t LuaType::stackIndexOf(
+	size_t stackOffset
+) const {
 	return (ssize_t)this->_stackOffset - ((ssize_t)this->state()._stack.length());
 }
 
@@ -117,9 +138,10 @@ void LuaType::autoReplaced() {
 }
 
 Strong<LuaType> LuaType::_pick(
-	State& state
+	State& state,
+	ssize_t index
 ) {
-	switch (lua_type(state, -1)) {
+	switch (lua_type(state, index)) {
 		case LUA_TNIL: return Strong<LuaType>(
 			state);
 		case LUA_TBOOLEAN: return Strong<LuaBoolean>(
@@ -137,16 +159,19 @@ Strong<LuaType> LuaType::_pick(
 		case LUA_TTABLE: return Strong<LuaTable>(
 			state)
 			.as<LuaType>();
+		case LUA_TLIGHTUSERDATA: return Strong<LuaLightUserData>(
+			state)
+			.as<LuaType>();
 		default:
 			throw NotSupportedException();
 	}
 }
 
-void LuaType::_restack(
+size_t LuaType::_restack(
 	bool autoReplaced
 ) {
 	lua_pushvalue(*this->_state, this->stackIndex());
-	this->_state->_pushStackItem(
+	return this->_state->_pushStackItem(
 		autoReplaced ? nullptr : this,
 		autoReplaced);
 }

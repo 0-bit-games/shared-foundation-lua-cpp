@@ -26,4 +26,5 @@ bool LuaBoolean::value() const {
 
 LuaBoolean::LuaBoolean(
 	State& state
-) : LuaType(state) { }
+) : LuaType(
+		state) { }

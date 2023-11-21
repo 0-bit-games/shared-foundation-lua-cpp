@@ -27,4 +27,5 @@ Strong<String> LuaString::value() const {
 
 LuaString::LuaString(
 	State& state
-) : LuaType(state) { }
+) : LuaType(
+		state) { }

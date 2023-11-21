@@ -37,7 +37,8 @@ namespace fart::lua::types {
 				number,
 				string,
 				function,
-				table
+				table,
+				lightUserData
 			};
 
 			LuaType(const LuaType&) = delete;
@@ -48,6 +49,8 @@ namespace fart::lua::types {
 			}
 
 			virtual Kind kind() const;
+			String kindDescription() const;
+
 			virtual Strong<Type> fart() const noexcept(false);
 
 			Strong<LuaBoolean> boolean() const noexcept(false);
@@ -71,14 +74,19 @@ namespace fart::lua::types {
 
 			ssize_t stackIndex() const;
 
+			ssize_t stackIndexOf(
+				size_t stackOffset
+			) const;
+
 			void autoReplaced();
 
 		private:
 
 			static Strong<LuaType> _pick(
-				State& state);
+				State& state,
+				ssize_t index = -1);
 
-			void _restack(
+			size_t _restack(
 				bool autoReplaced = false);
 
 			Strong<State> _state;
