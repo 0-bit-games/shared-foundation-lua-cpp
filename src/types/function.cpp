@@ -17,19 +17,6 @@
 using namespace fart::lua::types;
 using namespace fart::lua::exceptions;
 
-LuaFunction::User::~User() { }
-
-int LuaFunction::User::_callback(
-	lua_State* L
-) {
-	return 0;
-}
-
-LuaFunction::User::User(
-	State& state,
-	const ::function<Strong<Type>(const Array<Type>& arguments)> function
-) : _function(function) { }
-
 LuaFunction::~LuaFunction() { }
 
 LuaType::Kind LuaFunction::kind() const {

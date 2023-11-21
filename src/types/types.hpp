@@ -16,5 +16,6 @@
 #include "./function.hpp"
 #include "./table.hpp"
 #include "./light-user-data.hpp"
+#include "./user-function.hpp"
 
 #endif /* fart_lua_types_hpp */

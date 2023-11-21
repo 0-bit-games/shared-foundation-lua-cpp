@@ -20,6 +20,7 @@ namespace fart::lua::types {
 	class LuaString;
 	class LuaFunction;
 	class LuaTable;
+	class LuaUserFunction;
 	class Caller;
 
 	class LuaType : public Object {
@@ -28,6 +29,7 @@ namespace fart::lua::types {
 		friend class fart::lua::State;
 		friend class Caller;
 		friend class LuaTable;
+		friend class LuaUserFunction;
 
 		public:
 

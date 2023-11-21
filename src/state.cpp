@@ -99,9 +99,21 @@ Strong<LuaString> State::string(
 		});
 }
 
-Strong<LuaFunction> State::function(
+Strong<LuaUserFunction> State::function(
 	const ::function<Strong<Type>(const Array<Type>&)> function
 ) {
+
+	auto userData = this->lightUserData((void*)this);
+	auto index = this->number((int64_t)this->_stack.length() + 1);
+
+	userData->_restack(true);
+	index->_restack(true);
+
+	lua_pushcclosure(*this, LuaUserFunction::callback, 2);
+
+	return Strong<LuaUserFunction>(
+		*this,
+		function);
 
 }
 

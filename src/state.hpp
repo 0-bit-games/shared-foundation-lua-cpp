@@ -22,6 +22,7 @@ namespace fart::lua {
 		class LuaFunction;
 		class LuaTable;
 		class LuaLightUserData;
+		class LuaUserFunction;
 		class Caller;
 	}
 
@@ -33,6 +34,7 @@ namespace fart::lua {
 		friend class types::LuaType;
 		friend class types::Caller;
 		friend class types::LuaTable;
+		friend class types::LuaUserFunction;
 
 		public:
 
@@ -65,8 +67,8 @@ namespace fart::lua {
 			Strong<types::LuaString> string(
 				const String& value);
 
-			Strong<types::LuaFunction> function(
-				const function<Strong<Type>(const Array<Type>&)> function);
+			Strong<types::LuaUserFunction> function(
+				const function<Strong<Type>(const Array<>&)> function);
 
 			Strong<types::LuaTable> table();
 
