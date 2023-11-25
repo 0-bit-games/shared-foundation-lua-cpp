@@ -20,8 +20,9 @@ namespace fart::lua::types {
 	class LuaString;
 	class LuaFunction;
 	class LuaTable;
-	class LuaUserFunction;
 	class Caller;
+	class LuaUserFunction;
+	class LuaValue;
 
 	class LuaType : public Object {
 
@@ -30,6 +31,7 @@ namespace fart::lua::types {
 		friend class Caller;
 		friend class LuaTable;
 		friend class LuaUserFunction;
+		friend class LuaValue;
 
 		public:
 
@@ -51,7 +53,7 @@ namespace fart::lua::types {
 			}
 
 			virtual Kind kind() const;
-			String kindDescription() const;
+			virtual String kindDescription() const;
 
 			virtual Strong<Type> fart() const noexcept(false);
 
@@ -80,16 +82,17 @@ namespace fart::lua::types {
 				size_t stackOffset
 			) const;
 
-			void autoReplaced();
+			virtual Strong<LuaType> underlying() const;
+
+			Strong<LuaType> push() const;
+
+			Strong<LuaType> replaced();
 
 		private:
 
 			static Strong<LuaType> _pick(
 				State& state,
-				ssize_t index = -1);
-
-			size_t _restack(
-				bool autoReplaced = false);
+				ssize_t offset = 0);
 
 			Strong<State> _state;
 			size_t _stackOffset;

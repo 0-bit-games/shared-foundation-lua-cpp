@@ -77,20 +77,44 @@ Caller& Caller::argument(
 
 Strong<LuaType> Caller::exec() {
 
-	this->_function._restack(true);
+	bool success = this->_function
+		.state()
+		._withAutoPopped<bool>(
+			[&](const function<void(const LuaType&)> autoPop) {
 
-	this->_arguments
-		.forEach([](LuaType& argument) {
-			argument._restack(true);
-		});
+				auto fnc = this->_function.push();
 
-	if (lua_pcall(this->_function.state(), this->_arguments.count(), 1, 0) != LUA_OK) {
+				autoPop(fnc);
+
+				this->_arguments
+					.forEach([&](LuaType& argument) {
+						autoPop(argument.push());
+					});
+
+				return this->_function.state()
+					._withStackPointer<bool>(
+						-(this->_arguments.count()),
+						[&]() {
+							return lua_pcall(this->_function.state(), this->_arguments.count(), 1, 0) == LUA_OK;
+						});
+
+			});
+
+	if (!success) {
 		String message = lua_tostring(this->_function.state(), -1);
 		lua_pop(this->_function.state(), 1);
 		throw RuntimeException(message);
 	}
 
-	return LuaType::_pick(
-		this->_function.state());
+	Array<LuaType> result;
+
+	while (this->_function.state()._available()) {
+		result
+			.append(
+				LuaType::_pick(
+					this->_function.state()));
+	}
+
+	return result.first();
 
 }

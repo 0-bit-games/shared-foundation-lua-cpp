@@ -16,6 +16,4 @@ Global::~Global() { }
 
 Global::Global(
 	State& state
-) : LuaTable(state) {
-	lua_getglobal(state, "_G");
-}
+) : LuaTable(state) { }

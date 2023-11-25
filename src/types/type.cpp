@@ -17,6 +17,7 @@
 #include "./string.hpp"
 #include "./function.hpp"
 #include "./table.hpp"
+#include "./value.hpp"
 
 using namespace fart::lua::types;
 using namespace fart::lua::exceptions;
@@ -25,6 +26,8 @@ template<typename T>
 Strong<T> _to(const LuaType* value, LuaType::Kind kind) noexcept(false) {
 
 	if (value->kind() != kind) {
+		value->kindDescription()
+			.print();
 		throw UnexpectedTypeException(
 			kind,
 			value->kind());
@@ -119,8 +122,7 @@ bool LuaType::operator!=(
 LuaType::LuaType(
 	State& state
 ) : _state(state),
-	_stackOffset(state._pushStackItem(
-		this)) { }
+	_stackOffset(0) { }
 
 ssize_t LuaType::stackIndex() const {
 	return this->stackIndexOf(
@@ -130,48 +132,67 @@ ssize_t LuaType::stackIndex() const {
 ssize_t LuaType::stackIndexOf(
 	size_t stackOffset
 ) const {
-	return (ssize_t)this->_stackOffset - ((ssize_t)this->state()._stack.length());
+	return (ssize_t)stackOffset - (ssize_t)this->state()._stackPointer();
 }
 
-void LuaType::autoReplaced() {
-	this->_state->_markAutoReplaced(this);
+Strong<LuaType> LuaType::underlying() const {
+	return Strong<LuaType>(
+		(LuaType&)*this);
 }
 
-Strong<LuaType> LuaType::_pick(
-	State& state,
-	ssize_t index
-) {
-	switch (lua_type(state, index)) {
-		case LUA_TNIL: return Strong<LuaType>(
-			state);
-		case LUA_TBOOLEAN: return Strong<LuaBoolean>(
-			state)
+Strong<LuaType> LuaType::push() const {
+	lua_pushvalue(*this->_state, this->stackIndex());
+	return this->_state->_pushStackItem<LuaValue>(
+		*this)
+		.as<LuaType>();
+}
+
+Strong<LuaType> LuaType::replaced() {
+	switch (lua_type(this->state(), this->stackIndex())) {
+		case LUA_TNIL: return this->state()._replaceStackItem<LuaType>(
+			this->_stackOffset);
+		case LUA_TBOOLEAN: return this->state()._replaceStackItem<LuaBoolean>(
+			this->_stackOffset)
 			.as<LuaType>();
-		case LUA_TNUMBER: return Strong<LuaNumber>(
-			state)
+		case LUA_TNUMBER: return this->state()._replaceStackItem<LuaNumber>(
+			this->_stackOffset)
 			.as<LuaType>();
-		case LUA_TSTRING: return Strong<LuaString>(
-			state)
+		case LUA_TSTRING: return this->state()._replaceStackItem<LuaString>(
+			this->_stackOffset)
 			.as<LuaType>();
-		case LUA_TFUNCTION: return Strong<LuaFunction>(
-			state)
+		case LUA_TFUNCTION: return this->state()._replaceStackItem<LuaFunction>(
+			this->_stackOffset)
 			.as<LuaType>();
-		case LUA_TTABLE: return Strong<LuaTable>(
-			state)
+		case LUA_TTABLE: return this->state()._replaceStackItem<LuaTable>(
+			this->_stackOffset)
 			.as<LuaType>();
-		case LUA_TLIGHTUSERDATA: return Strong<LuaLightUserData>(
-			state)
+		case LUA_TLIGHTUSERDATA: return this->state()._replaceStackItem<LuaLightUserData>(
+			this->_stackOffset)
 			.as<LuaType>();
 		default:
 			throw NotSupportedException();
 	}
 }
 
-size_t LuaType::_restack(
-	bool autoReplaced
+Strong<LuaType> LuaType::_pick(
+	State& state,
+	ssize_t offset
 ) {
-	lua_pushvalue(*this->_state, this->stackIndex());
-	return this->_state->_pushStackItem(
-		autoReplaced ? nullptr : this,
-		autoReplaced);
+	switch (lua_type(state, state._nextIndex() + offset)) {
+		case LUA_TNIL: return state._pushStackItem<LuaType>();
+		case LUA_TBOOLEAN: return state._pushStackItem<LuaBoolean>()
+			.as<LuaType>();
+		case LUA_TNUMBER: return state._pushStackItem<LuaNumber>()
+			.as<LuaType>();
+		case LUA_TSTRING: return state._pushStackItem<LuaString>()
+			.as<LuaType>();
+		case LUA_TFUNCTION: return state._pushStackItem<LuaFunction>()
+			.as<LuaType>();
+		case LUA_TTABLE: return state._pushStackItem<LuaTable>()
+			.as<LuaType>();
+		case LUA_TLIGHTUSERDATA: return state._pushStackItem<LuaLightUserData>()
+			.as<LuaType>();
+		default:
+			throw NotSupportedException();
+	}
 }

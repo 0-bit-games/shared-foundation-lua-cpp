@@ -101,7 +101,7 @@ namespace fart::lua {
 
 			struct StackItem {
 				const types::LuaType* value;
-				bool autoReplaced;
+				bool autoPopped;
 			};
 
 			State();
@@ -111,21 +111,153 @@ namespace fart::lua {
 			Array<String> _luaStackDescriptions() const;
 #endif /* FART_LUA_STACK_DEBUG */
 
-			void _flushAutoReplaced();
+			void _updateRootStackPointer();
 
-			size_t _pushStackItem(
-				const types::LuaType* value,
-				bool autoReplaced = false,
-				ssize_t autoReplaceOffset = -1);
+			template<
+				typename T,
+				typename... Args>
+			Strong<T> _pushStackItem(
+				Args&&... args
+			) {
+
+				Strong<T> value(*this, std::forward<Args>(args)...);
+
+				value->_stackOffset = this->_stack.length();
+
+				StackItem* item = (StackItem *)calloc(1, sizeof(StackItem));
+
+				item->value = value
+					.template as<types::LuaType>();
+
+				item->autoPopped = false;
+
+				this->_stack.append(item);
+
+				this->_updateRootStackPointer();
+
+			#ifdef FART_LUA_STACK_DEBUG
+				this->printStack("Push Stack Item");
+			#endif /* FART_LUA_STACK_DEBUG */
+
+				return value;
+
+			}
+
+			template<
+				typename T,
+				typename... Args>
+			Strong<T> _replaceStackItem(
+				size_t stackOffset,
+				Args&&... args
+			) {
+
+				Strong<T> value(*this, std::forward<Args>(args)...);
+
+				value->_stackOffset = stackOffset;
+
+				this->_stack[stackOffset]->value = value;
+
+				return value;
+
+			}
 
 			void _popStackItem(
 				const types::LuaType* value);
 
-			void _markAutoReplaced(
-				const types::LuaType* value);
+			template<typename T>
+			T _withStackPointer(
+				ssize_t offset,
+				const ::function<T()>& transform
+			) {
+
+				struct Cleaner {
+
+					Cleaner(
+						State& state
+					) : state(state) { }
+
+					~Cleaner() {
+						this->state._stackPointers
+							.removeLast();
+					}
+
+					State& state;
+
+				} cleaner(*this);
+
+				this->_stackPointers
+					.append((this->_stack.length() - 1) + offset);
+				T result = transform();
+
+				return result;
+
+			}
+
+			template<typename T>
+			T _withAutoPopped(
+				const ::function<T(const ::function<void(const types::LuaType&)>&)> transform
+			) {
+
+				struct Popper {
+
+					Popper(
+						State& state
+					) : indices(),
+						state(state) { }
+
+					~Popper() {
+
+						ssize_t idx;
+
+						while ((idx = indices.indexOf(this->state._stack.length() - 1)) != NotFound) {
+
+							this->indices.removeItemAtIndex(idx);
+
+							free(this->state._stack.removeLast());
+
+						}
+
+						this->state._updateRootStackPointer();
+
+					}
+
+					Data<size_t> indices;
+					State& state;
+
+				} popper(*this);
+
+				return transform([&](const types::LuaType& value) {
+
+					for (ssize_t idx = this->_stack.length() - 1 ; idx >= 0 ; idx--) {
+						if (this->_stack[idx] != nullptr && this->_stack[idx]->value == &value) {
+							popper.indices.append(idx);
+							this->_stack[idx]->autoPopped = true;
+							break;
+						}
+					}
+
+				});
+
+			}
+
+			void _withAutoPopped(
+				const ::function<void(const ::function<void(const types::LuaType&)>&)> transform
+			) {
+				return (void)this->_withAutoPopped<void*>(
+					[&](const ::function<void(const types::LuaType&)> pop) {
+						transform(pop);
+						return nullptr;
+					});
+			}
+
+			size_t _stackPointer() const;
+
+			size_t _available() const;
+			ssize_t _nextIndex() const;
 
 			lua_State* _l;
 			Data<StackItem*> _stack;
+			Data<size_t> _stackPointers;
 
 	};
 

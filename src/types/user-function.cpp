@@ -6,9 +6,12 @@
 // See license in LICENSE.
 //
 
+#include "../exceptions/runtime-exception.hpp"
+
 #include "./user-function.hpp"
 
 using namespace fart::lua::types;
+using namespace fart::lua::exceptions;
 
 LuaUserFunction::~LuaUserFunction() { }
 
@@ -19,36 +22,39 @@ int LuaUserFunction::callback(
 	State& state = *(State*)lua_touserdata(L, lua_upvalueindex(1));
 	int64_t index = lua_tointeger(L, lua_upvalueindex(2));
 
-	int64_t top = lua_gettop(state);
-
-	Array<> arguments;
-
-	for (int64_t idx = 0 ; idx < lua_gettop(state) ; idx++) {
-
-		auto value = LuaType::_pick(
-			state,
-			idx + 1);
-
-		value->autoReplaced();
-
-		arguments.append(
-			value->fart());
-
-	}
+	Array<LuaType> arguments;
 
 	try {
 
-		auto result = state.fart(
-			((LuaUserFunction*)state._stack[index]->value)
-				->_call(
-					arguments));
+		while (state._available() > 0) {
+			arguments.append(
+				LuaType::_pick(
+					state));
+		}
 
-		result->autoReplaced();
 
-		state._flushAutoReplaced();
+		state._withAutoPopped([&](const ::function<void(const LuaType&)> autoPop) {
+
+			autoPop(state.fart(
+				((LuaUserFunction*)state._stack[index]->value)
+					->_call(
+						arguments
+							.map<Type>([](const LuaType& value) {
+								return value.fart();
+							}))));
+
+		});
+
 
 		return 1;
 
+	} catch (const RuntimeException& exception) {
+		exception.message()
+			.withCString([&](const char* message) {
+				lua_pushstring(
+					state,
+					message);
+			});
 	} catch (const Exception& exception) {
 		lua_pushstring(
 			state,
@@ -56,7 +62,7 @@ int LuaUserFunction::callback(
 	} catch (...) {
 		lua_pushstring(
 			state,
-			"Unknown exception occurred");
+			"Unknown exception occurred.");
 	}
 
 	lua_error(

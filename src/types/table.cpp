@@ -28,32 +28,33 @@ Strong<Type> LuaTable::value() noexcept(false) {
 
 	Strong<Dictionary<Type>> result;
 
-	auto nil = this->state().nil();
+	Strong<LuaType> key = this->state().nil()
+		.as<LuaType>();
 
-	this->_restack();
+	auto table = this->push();
 
-	nil->_restack(true);
+	this->_state
+		->_withAutoPopped(
+			[&](const ::function<void(const LuaType&)> autoPop) {
 
-	Strong<LuaType> key = nullptr;
+				key = key->push();
 
-	while (lua_next(this->state(), -2)) {
+				autoPop(key);
 
-		key = LuaType::_pick(
-			this->state(),
-			-2);
+				while (lua_next(table->state(), table->stackIndex())) {
 
-		auto value = LuaType::_pick(
-			this->state());
+					key = key->replaced();
 
-		result->set(
-			key->fart(),
-			value->fart());
+					auto value = LuaType::_pick(
+						this->state());
 
-		key->autoReplaced();
+					result->set(
+						key->fart(),
+						value->fart());
 
-	}
+				}
 
-	this->state()._flushAutoReplaced();
+			});
 
 	if (result->keys()->every([](const Type& key, size_t idx) {
 		return key.kind() == Type::Kind::number && Number<size_t>::getValue(key) == idx + 1;
@@ -136,9 +137,15 @@ Strong<LuaType> LuaTable::_get(
 	LuaType& key
 ) {
 
-	key._restack(true);
+	this->_state
+		->_withAutoPopped(
+			[&](const ::function<void(const LuaType&)> autoPop) {
 
-	lua_gettable(this->state(), this->stackIndex());
+				autoPop(key.push());
+
+				lua_gettable(this->state(), this->stackIndex());
+
+			});
 
 	return LuaType::_pick(
 		this->state());
@@ -150,11 +157,15 @@ void LuaTable::_set(
 	LuaType& value
 ) {
 
-	key._restack(true);
-	value._restack(true);
+	this->_state
+		->_withAutoPopped(
+			[&](const ::function<void(const LuaType&)> autoPop) {
 
-	lua_settable(this->state(), this->stackIndex());
+				autoPop(key.push());
+				autoPop(value.push());
 
-	this->state()._flushAutoReplaced();
+				lua_settable(this->state(), this->stackIndex());
+
+			});
 
 }
