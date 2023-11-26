@@ -32,20 +32,27 @@ int LuaUserFunction::callback(
 					state));
 		}
 
-		state._withAutoPopped([&](const ::function<void(const LuaType&)> autoPop) {
+		return state
+			._withAutoPopped<int>([&](const ::function<void(const LuaType&)> autoPop) {
 
-			autoPop(state.fart(
-				((LuaUserFunction*)state._stack[index]->value)
+				auto result = ((LuaUserFunction*)state._stack[index]->value)
 					->_call(
 						arguments
 							.map<Type>([](const LuaType& value) {
 								return value.fart();
-							}))));
+							}));
 
-		});
+				result
+					->forEach([&](const Type& result) {
+						autoPop(
+							state
+								.fart(
+									result));
+					});
 
+				return result->count();
 
-		return 1;
+			});
 
 	} catch (const RuntimeException& exception) {
 		exception.message()
@@ -73,11 +80,11 @@ int LuaUserFunction::callback(
 
 LuaUserFunction::LuaUserFunction(
 	State& state,
-	const ::function<Strong<Type>(const Array<Type>& arguments)> function
+	const ::function<Strong<Array<>>(const Array<Type>& arguments)> function
 ) : LuaFunction(state),
 	_function(function) { }
 
-Strong<Type> LuaUserFunction::_call(
+Strong<Array<>> LuaUserFunction::_call(
 	const Array<>& arguments
 ) const {
 	return this->_function(

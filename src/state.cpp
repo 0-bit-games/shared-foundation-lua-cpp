@@ -109,7 +109,7 @@ Strong<LuaString> State::string(
 }
 
 Strong<LuaUserFunction> State::function(
-	const ::function<Strong<Type>(const Array<Type>&)> function
+	const ::function<Strong<Array<>>(const Array<>&)> function
 ) {
 
 	auto userData = this->lightUserData((void*)this);

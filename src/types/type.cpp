@@ -60,9 +60,11 @@ String LuaType::kindDescription() const {
 }
 
 Strong<Type> LuaType::fart(
+	bool null
 ) const noexcept(false) {
 	switch (this->kind()) {
 		case LuaType::Kind::nil:
+			if (null) return nullptr;
 			return Strong<Null>()
 				.as<Type>();
 		case LuaType::Kind::boolean:

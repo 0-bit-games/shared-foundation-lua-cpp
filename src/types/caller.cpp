@@ -75,7 +75,7 @@ Caller& Caller::argument(
 	return *this;
 }
 
-Strong<LuaType> Caller::exec() const noexcept(false) {
+Strong<Array<LuaType>> Caller::exec() const noexcept(false) {
 
 	bool success = this->_function
 		.state()
@@ -112,15 +112,15 @@ Strong<LuaType> Caller::exec() const noexcept(false) {
 		throw RuntimeException(message);
 	}
 
-	Array<LuaType> result;
+	Strong<Array<LuaType>> result;
 
 	while (this->_function.state()._available()) {
 		result
-			.append(
+			->append(
 				LuaType::_pick(
 					this->_function.state()));
 	}
 
-	return result.first();
+	return result;
 
 }
