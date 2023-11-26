@@ -32,7 +32,6 @@ int LuaUserFunction::callback(
 					state));
 		}
 
-
 		state._withAutoPopped([&](const ::function<void(const LuaType&)> autoPop) {
 
 			autoPop(state.fart(

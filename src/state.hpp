@@ -38,12 +38,33 @@ namespace fart::lua {
 
 		public:
 
+			enum class Libraries : uint16_t {
+
+				None       = 0,
+
+				Coroutines = 1 << 0,
+				Debug      = 1 << 1,
+				IO         = 1 << 2,
+				Math       = 1 << 3,
+				OS         = 1 << 4,
+				Package    = 1 << 5,
+				String     = 1 << 6,
+				Table      = 1 << 7,
+				UTF8       = 1 << 8,
+
+				NonIO      = Coroutines | Math | Package | String | Table | UTF8,
+				All        = NonIO | IO | OS
+
+			};
+
 			static Strong<State> fromFile(
-				const String& filename
+				const String& filename,
+				Libraries libraries = static_cast<Libraries>(UINT16_MAX)
 			) noexcept(false);
 
 			static Strong<State> fromString(
-				const String& string
+				const String& string,
+				Libraries libraries = static_cast<Libraries>(UINT16_MAX)
 			) noexcept(false);
 
 			State(
@@ -52,6 +73,9 @@ namespace fart::lua {
 			virtual ~State();
 
 			Strong<Global> global();
+
+			void setGlobal(
+				types::LuaTable& global);
 
 			Strong<types::LuaType> nil();
 
@@ -104,7 +128,8 @@ namespace fart::lua {
 				bool autoPopped;
 			};
 
-			State();
+			State(
+				Libraries libraries = static_cast<Libraries>(UINT16_MAX));
 
 #ifdef FART_LUA_STACK_DEBUG
 			Array<String> _fartStackDescriptions() const;
@@ -260,6 +285,14 @@ namespace fart::lua {
 			Data<size_t> _stackPointers;
 
 	};
+
+	inline State::Libraries operator|(State::Libraries a, State::Libraries b) {
+		return static_cast<State::Libraries>(static_cast<uint16_t>(a) | static_cast<uint16_t>(b));
+	}
+
+	inline State::Libraries operator&(State::Libraries a, State::Libraries b) {
+		return static_cast<State::Libraries>(static_cast<uint16_t>(a) & static_cast<uint16_t>(b));
+	}
 
 }
 

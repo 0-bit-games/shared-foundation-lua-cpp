@@ -75,7 +75,7 @@ Caller& Caller::argument(
 	return *this;
 }
 
-Strong<LuaType> Caller::exec() {
+Strong<LuaType> Caller::exec() const noexcept(false) {
 
 	bool success = this->_function
 		.state()
@@ -86,16 +86,22 @@ Strong<LuaType> Caller::exec() {
 
 				autoPop(fnc);
 
-				this->_arguments
-					.forEach([&](LuaType& argument) {
-						autoPop(argument.push());
-					});
+				this->_function.state()
+					._withAutoPopped(
+						[&](const function<void(const LuaType&)> autoPop) {
+
+							this->_arguments
+								.forEach([&](LuaType& argument) {
+									autoPop(argument.push());
+								});
+
+						});
 
 				return this->_function.state()
 					._withStackPointer<bool>(
-						-(this->_arguments.count()),
+						0,
 						[&]() {
-							return lua_pcall(this->_function.state(), this->_arguments.count(), 1, 0) == LUA_OK;
+							return lua_pcall(fnc->state(), this->_arguments.count(), 1, 0) == LUA_OK;
 						});
 
 			});

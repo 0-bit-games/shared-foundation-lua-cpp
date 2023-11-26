@@ -45,7 +45,7 @@ namespace fart::lua::types {
 			Caller& argument(
 				const Type& value);
 
-			Strong<LuaType> exec() noexcept(false);
+			Strong<LuaType> exec() const noexcept(false);
 
 		private:
 
