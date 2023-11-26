@@ -39,20 +39,20 @@ Strong<Type> LuaTable::value() noexcept(false) {
 
 				key = key->push();
 
-				autoPop(key);
-
 				while (lua_next(table->state(), table->stackIndex())) {
-
-					key = key->replaced();
 
 					auto value = LuaType::_pick(
 						this->state());
+
+					key = key->replaced();
 
 					result->set(
 						key->fart(),
 						value->fart());
 
 				}
+
+				autoPop(key);
 
 			});
 
