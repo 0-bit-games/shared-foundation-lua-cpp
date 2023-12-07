@@ -232,7 +232,7 @@ namespace fart::lua {
 
 					~Popper() {
 
-						ssize_t idx;
+						size_t idx;
 
 						while ((idx = indices.indexOf(this->state._stack.length() - 1)) != NotFound) {
 

@@ -56,7 +56,7 @@ namespace fart::lua::types {
 			virtual String kindDescription() const;
 
 			virtual Strong<Type> fart(
-				bool null = true
+				bool trueNull = true
 			) const noexcept(false);
 
 			Strong<LuaBoolean> boolean() const noexcept(false);
