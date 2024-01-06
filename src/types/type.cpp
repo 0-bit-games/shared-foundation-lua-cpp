@@ -25,9 +25,7 @@ using namespace fart::lua::exceptions;
 template<typename T>
 Strong<T> _to(const LuaType* value, LuaType::Kind kind) noexcept(false) {
 
-	if (value->kind() != kind) {
-		value->kindDescription()
-			.print();
+	if (value->kind() != LuaType::Kind::nil && value->kind() != kind) {
 		throw UnexpectedTypeException(
 			kind,
 			value->kind());
