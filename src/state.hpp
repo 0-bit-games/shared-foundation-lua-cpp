@@ -42,18 +42,19 @@ namespace fart::lua {
 
 				None       = 0,
 
-				Coroutines = 1 << 0,
-				Debug      = 1 << 1,
-				IO         = 1 << 2,
-				Math       = 1 << 3,
-				OS         = 1 << 4,
-				Package    = 1 << 5,
-				String     = 1 << 6,
-				Table      = 1 << 7,
-				UTF8       = 1 << 8,
+				Coroutines  = 1 << 0,
+				Debug       = 1 << 1,
+				IO          = 1 << 2,
+				Math        = 1 << 3,
+				OS          = 1 << 4,
+				Package     = 1 << 5,
+				String      = 1 << 6,
+				Table       = 1 << 7,
+				UTF8        = 1 << 8,
 
-				NonIO      = Coroutines | Math | Package | String | Table | UTF8,
-				All        = NonIO | IO | OS
+				NonExternal = Coroutines | Math | String | Table | UTF8,
+				NonIO       = NonExternal | Package,
+				All         = NonIO | IO | OS
 
 			};
 
