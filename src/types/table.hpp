@@ -66,6 +66,9 @@ namespace fart::lua::types {
 
 			size_t count();
 
+			void forEach(
+				std::function<void(LuaType& key, LuaType& value)> todo);
+
 		protected:
 
 			LuaTable(
