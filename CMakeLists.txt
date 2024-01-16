@@ -34,7 +34,7 @@ endif()
 
 if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build/lua-${LUA_VERSION}.tar.gz)
 	execute_process(
-		COMMAND curl -R -O http://www.lua.org/ftp/lua-${LUA_VERSION}.tar.gz
+		COMMAND curl -R -O https://www.lua.org/ftp/lua-${LUA_VERSION}.tar.gz
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build
 	)
 	execute_process(
