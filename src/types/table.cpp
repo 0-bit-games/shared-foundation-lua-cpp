@@ -103,6 +103,40 @@ void LuaTable::set(
 		this->state().fart(value));
 }
 
+void LuaTable::setMetaTable(
+	LuaTable& metaTable
+) {
+
+	auto table = this->push();
+
+	this->_state
+		->_withAutoPopped(
+			[&](const ::function<void(const LuaType&)> autoPop) {
+
+				autoPop(metaTable.push());
+
+				lua_setmetatable(this->state(), table->stackIndex());
+
+			});
+
+}
+
+void LuaTable::resetMetaTable() {
+
+	auto table = this->push();
+
+	this->_state
+		->_withAutoPopped(
+			[&](const ::function<void(const LuaType&)> autoPop) {
+
+				autoPop(this->state().nil());
+
+				lua_setmetatable(this->state(), table->stackIndex());
+
+			});
+
+}
+
 size_t LuaTable::count() {
 	return luaL_len(this->state(), this->stackIndex());
 }

@@ -64,6 +64,11 @@ namespace fart::lua::types {
 				const Type& value
 			) noexcept(false);
 
+			void setMetaTable(
+				LuaTable& metaTable);
+
+			void resetMetaTable();
+
 			size_t count();
 
 			void forEach(
