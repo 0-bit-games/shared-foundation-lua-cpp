@@ -23,11 +23,6 @@ namespace fart::lua::types {
 
 		public:
 
-			enum class SubType {
-				dictionary = 0,
-				array
-			};
-
 			virtual ~LuaTable();
 
 			virtual LuaType::Kind kind() const override;
