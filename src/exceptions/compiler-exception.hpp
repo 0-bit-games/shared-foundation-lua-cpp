@@ -9,7 +9,7 @@
 #ifndef fart_lua_compiler_exception_hpp
 #define fart_lua_compiler_exception_hpp
 
-#include <fart.hpp>
+#include "../fart/fart.hpp"
 
 namespace fart::lua::exceptions {
 

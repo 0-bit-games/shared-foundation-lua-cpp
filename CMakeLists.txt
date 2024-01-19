@@ -40,20 +40,17 @@ if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build/lua-${LUA_VERSION}.tar.gz)
 	execute_process(
 		COMMAND tar -zxf lua-${LUA_VERSION}.tar.gz
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build
+		COMMAND mv lua-${LUA_VERSION} lua
 	)
 endif()
 
 execute_process(
 	COMMAND ${LUA_MAKE_PREFIX} make all test
-	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build/lua-${LUA_VERSION})
-
-target_include_directories(fart-lua SYSTEM
-	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/build/lua-${LUA_VERSION}/src
-	PUBLIC ${FART_SRC})
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build/lua})
 
 message(STATUS ${FART_SRC})
 
-target_link_libraries(fart-lua ${CMAKE_CURRENT_SOURCE_DIR}/build/lua-${LUA_VERSION}/src/liblua.a)
+target_link_libraries(fart-lua ${CMAKE_CURRENT_SOURCE_DIR}/build/lua/src/liblua.a)
 
 add_definitions(-DFART_NO_IO -DFART_NO_SOCKET)
 

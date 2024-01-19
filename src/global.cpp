@@ -6,7 +6,7 @@
 // See license in LICENSE.
 //
 
-#include <lua.hpp>
+#include "../build/lua/src/lua.hpp"
 
 #include "./global.hpp"
 
