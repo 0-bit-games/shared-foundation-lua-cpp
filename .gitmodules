@@ -1,3 +1,6 @@
 [submodule "src/fart"]
 	path = src/fart
 	url = git@github.com:trenskow/fart
+[submodule "src/lua"]
+	path = src/lua
+	url = git@github.com:trenskow/lua

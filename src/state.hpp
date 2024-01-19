@@ -9,7 +9,7 @@
 #ifndef fart_lua_state_hpp
 #define fart_lua_state_hpp
 
-#include "../build/lua/src/lua.hpp"
+#include "./lua/lua-5.4.6/include/lua.hpp"
 #include "./fart/fart.hpp"
 
 namespace fart::lua {

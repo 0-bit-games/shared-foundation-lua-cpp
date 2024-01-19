@@ -20,10 +20,6 @@ add_library(fart-lua
 	src/types/user-function.cpp
 	src/types/value.cpp)
 
-if (NOT DEFINED FART_SRC)
-	message(FATAL_ERROR "Missing fart source directory (FART_SRC).")
-endif()
-
 if (NOT DEFINED LUA_VERSION)
 	set(LUA_VERSION "5.4.6")
 endif()
@@ -32,25 +28,9 @@ if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build)
 	file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
 endif()
 
-if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build/lua-${LUA_VERSION}.tar.gz)
-	execute_process(
-		COMMAND curl -R -O https://www.lua.org/ftp/lua-${LUA_VERSION}.tar.gz
-		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build
-	)
-	execute_process(
-		COMMAND tar -zxf lua-${LUA_VERSION}.tar.gz
-		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build
-		COMMAND mv lua-${LUA_VERSION} lua
-	)
-endif()
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/lua)
 
-execute_process(
-	COMMAND ${LUA_MAKE_PREFIX} make all test
-	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build/lua})
-
-message(STATUS ${FART_SRC})
-
-target_link_libraries(fart-lua ${CMAKE_CURRENT_SOURCE_DIR}/build/lua/src/liblua.a)
+target_link_libraries(fart-lua lua_static)
 
 add_definitions(-DFART_NO_IO -DFART_NO_SOCKET)
 
@@ -63,4 +43,4 @@ set_target_properties(fart-lua
 	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
 
 target_precompile_headers(fart-lua PRIVATE
-	${FART_SRC}/fart.hpp)
+	${CMAKE_CURRENT_SOURCE_DIR}/src/fart/fart.hpp)
