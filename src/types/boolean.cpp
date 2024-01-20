@@ -21,7 +21,7 @@ LuaType::Kind LuaBoolean::kind() const {
 }
 
 bool LuaBoolean::value() const {
-	return lua_toboolean(this->state(), this->stackIndex());
+	return lua_toboolean(this->state(), (int)this->stackIndex());
 }
 
 LuaBoolean::LuaBoolean(

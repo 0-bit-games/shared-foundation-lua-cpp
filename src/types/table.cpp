@@ -115,7 +115,7 @@ void LuaTable::setMetaTable(
 
 				autoPop(metaTable.push());
 
-				lua_setmetatable(this->state(), table->stackIndex());
+				lua_setmetatable(this->state(), (int)table->stackIndex());
 
 			});
 
@@ -131,14 +131,14 @@ void LuaTable::resetMetaTable() {
 
 				autoPop(this->state().nil());
 
-				lua_setmetatable(this->state(), table->stackIndex());
+				lua_setmetatable(this->state(), (int)table->stackIndex());
 
 			});
 
 }
 
 size_t LuaTable::count() {
-	return luaL_len(this->state(), this->stackIndex());
+	return luaL_len(this->state(), (int)this->stackIndex());
 }
 
 void LuaTable::forEach(
@@ -158,7 +158,7 @@ void LuaTable::forEach(
 
 				autoPop(key);
 
-				while (lua_next(table->state(), table->stackIndex())) {
+				while (lua_next(table->state(), (int)table->stackIndex())) {
 
 					auto value = LuaType::_pick(
 						this->state());
@@ -188,7 +188,7 @@ Strong<LuaType> LuaTable::_get(
 
 				autoPop(key.push());
 
-				lua_gettable(this->state(), this->stackIndex());
+				lua_gettable(this->state(), (int)this->stackIndex());
 
 			});
 
@@ -209,7 +209,7 @@ void LuaTable::_set(
 				autoPop(key.push());
 				autoPop(value.push());
 
-				lua_settable(this->state(), this->stackIndex());
+				lua_settable(this->state(), (int)this->stackIndex());
 
 			});
 

@@ -101,7 +101,7 @@ Strong<Array<LuaType>> Caller::exec() const noexcept(false) {
 					._withStackPointer<bool>(
 						0,
 						[&]() {
-							return lua_pcall(fnc->state(), this->_arguments.count(), 1, 0) == LUA_OK;
+							return lua_pcall(fnc->state(), (int)this->_arguments.count(), 1, 0) == LUA_OK;
 						});
 
 			});

@@ -17,7 +17,7 @@ LuaType::Kind LuaLightUserData::kind() const {
 }
 
 void* LuaLightUserData::value() const {
-	return lua_touserdata(this->state(), this->stackIndex());
+	return lua_touserdata(this->state(), (int)this->stackIndex());
 }
 
 LuaLightUserData::LuaLightUserData(

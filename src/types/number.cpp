@@ -21,11 +21,11 @@ LuaType::Kind LuaNumber::kind() const {
 }
 
 bool LuaNumber::isInteger() const {
-	return lua_isinteger(this->state(), this->stackIndex());
+	return lua_isinteger(this->state(), (int)this->stackIndex());
 }
 
 double LuaNumber::value() const {
-	return lua_tonumber(this->state(), this->stackIndex());
+	return lua_tonumber(this->state(), (int)this->stackIndex());
 }
 
 LuaNumber::LuaNumber(

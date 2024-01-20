@@ -22,7 +22,7 @@ LuaType::Kind LuaString::kind() const {
 
 Strong<String> LuaString::value() const {
 	return Strong<String>(
-		lua_tostring(this->state(), this->stackIndex()));
+		lua_tostring(this->state(), (int)this->stackIndex()));
 }
 
 LuaString::LuaString(

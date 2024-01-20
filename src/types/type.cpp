@@ -141,14 +141,14 @@ Strong<LuaType> LuaType::underlying() const {
 }
 
 Strong<LuaType> LuaType::push() const {
-	lua_pushvalue(*this->_state, this->stackIndex());
+	lua_pushvalue(*this->_state, (int)this->stackIndex());
 	return this->_state->_pushStackItem<LuaValue>(
 		*this)
 		.as<LuaType>();
 }
 
 Strong<LuaType> LuaType::replaced() {
-	switch (lua_type(this->state(), this->stackIndex())) {
+	switch (lua_type(this->state(), (int)this->stackIndex())) {
 		case LUA_TNIL: return this->state()._replaceStackItem<LuaType>(
 			this->_stackOffset);
 		case LUA_TBOOLEAN: return this->state()._replaceStackItem<LuaBoolean>(
@@ -178,7 +178,7 @@ Strong<LuaType> LuaType::_pick(
 	State& state,
 	ssize_t offset
 ) {
-	switch (lua_type(state, state._nextIndex() + offset)) {
+	switch (lua_type(state, (int)(state._nextIndex() + offset))) {
 		case LUA_TNIL: return state._pushStackItem<LuaType>();
 		case LUA_TBOOLEAN: return state._pushStackItem<LuaBoolean>()
 			.as<LuaType>();
