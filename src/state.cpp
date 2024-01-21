@@ -109,7 +109,7 @@ Strong<LuaString> State::string(
 }
 
 Strong<LuaUserFunction> State::function(
-	const ::function<Strong<Array<>>(const Array<>&)> function
+	const ::function<Strong<Array<LuaType>>(const Array<LuaType>&)> function
 ) {
 
 	auto userData = this->lightUserData((void*)this);
@@ -128,6 +128,21 @@ Strong<LuaUserFunction> State::function(
 	return this->_pushStackItem<LuaUserFunction>(
 		function);
 
+}
+
+Strong<LuaUserFunction> State::function(
+	const ::function<Strong<Array<>>(const Array<>&)> function
+) {
+	return this->function([this,function](const Array<LuaType>& arguments) {
+		return function(
+			arguments
+				.map<Type>([&](const LuaType& value) {
+					return value.fart();
+				}))
+			->map<LuaType>([&](const Type& value) {
+				return this->fart(value);
+			});
+	});
 }
 
 Strong<LuaTable> State::table() {

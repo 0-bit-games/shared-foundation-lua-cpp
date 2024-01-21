@@ -59,6 +59,12 @@ namespace fart::lua::types {
 				const Type& value
 			) noexcept(false);
 
+			void rawSet(
+				LuaType& key,
+				LuaType& value);
+
+			Strong<LuaTable> getMetaTable();
+
 			void setMetaTable(
 				LuaTable& metaTable);
 

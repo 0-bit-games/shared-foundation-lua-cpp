@@ -23,6 +23,7 @@ namespace fart::lua::types {
 	class Caller;
 	class LuaUserFunction;
 	class LuaValue;
+	class LuaLightUserData;
 
 	class LuaType : public Object {
 
@@ -64,6 +65,7 @@ namespace fart::lua::types {
 			Strong<LuaString> string() const noexcept(false);
 			Strong<LuaFunction> function() const noexcept(false);
 			Strong<LuaTable> table() const noexcept(false);
+			Strong<LuaLightUserData> lightUserData() const noexcept(false);
 
 			bool operator==(
 				nullptr_t

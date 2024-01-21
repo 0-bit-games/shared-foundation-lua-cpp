@@ -93,7 +93,10 @@ namespace fart::lua {
 				const String& value);
 
 			Strong<types::LuaUserFunction> function(
-				const function<Strong<Array<>>(const Array<>&)> function);
+				const ::function<Strong<Array<types::LuaType>>(const Array<types::LuaType>&)> function);
+
+			Strong<types::LuaUserFunction> function(
+				const ::function<Strong<Array<>>(const Array<>&)> function);
 
 			Strong<types::LuaTable> table();
 

@@ -107,6 +107,10 @@ Strong<LuaTable> LuaType::table() const noexcept(false) {
 	return _to<LuaTable>(this, Kind::table);
 }
 
+Strong<LuaLightUserData> LuaType::lightUserData() const noexcept(false) {
+	return _to<LuaLightUserData>(this, Kind::lightUserData);
+}
+
 bool LuaType::operator==(
 	nullptr_t
 ) const {

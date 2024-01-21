@@ -28,13 +28,13 @@ namespace fart::lua::types {
 
 			LuaUserFunction(
 				State& state,
-				const ::function<Strong<Array<>>(const Array<>&)> function);
+				const ::function<Strong<Array<LuaType>>(const Array<LuaType>&)> function);
 
-			Strong<Array<>> _call(
-				const Array<>& argument
+			Strong<Array<LuaType>> _call(
+				const Array<LuaType>& argument
 			) const;
 
-			const ::function<Strong<Array<Type>>(const Array<Type>& arguments)> _function;
+			const ::function<Strong<Array<LuaType>>(const Array<LuaType>& arguments)> _function;
 
 	};
 

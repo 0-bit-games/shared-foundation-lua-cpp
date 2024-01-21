@@ -102,6 +102,36 @@ void LuaTable::set(
 		this->state().fart(value));
 }
 
+void LuaTable::rawSet(
+	LuaType& key,
+	LuaType& value
+) {
+
+	this->_state
+		->_withAutoPopped(
+			[&](const ::function<void(const LuaType&)> autoPop) {
+
+				autoPop(key.push());
+				autoPop(value.push());
+
+				lua_rawset(this->state(), (int)this->stackIndex());
+
+			});
+
+}
+
+Strong<LuaTable> LuaTable::getMetaTable() {
+
+	auto table = this->push();
+
+	lua_getmetatable(this->state(), (int)table->stackIndex());
+
+	return LuaType::_pick(
+		this->state())
+		.as<LuaTable>();
+
+}
+
 void LuaTable::setMetaTable(
 	LuaTable& metaTable
 ) {

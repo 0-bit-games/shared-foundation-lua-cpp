@@ -37,17 +37,11 @@ int LuaUserFunction::callback(
 
 				auto result = ((LuaUserFunction*)state._stack[index]->value)
 					->_call(
-						arguments
-							.map<Type>([](const LuaType& value) {
-								return value.fart();
-							}));
+						arguments);
 
 				result
-					->forEach([&](const Type& result) {
-						autoPop(
-							state
-								.fart(
-									result));
+					->forEach([&](const LuaType& result) {
+						autoPop(result);
 					});
 
 				return result->count();
@@ -80,12 +74,12 @@ int LuaUserFunction::callback(
 
 LuaUserFunction::LuaUserFunction(
 	State& state,
-	const ::function<Strong<Array<>>(const Array<Type>& arguments)> function
+	const ::function<Strong<Array<LuaType>>(const Array<LuaType>& arguments)> function
 ) : LuaFunction(state),
 	_function(function) { }
 
-Strong<Array<>> LuaUserFunction::_call(
-	const Array<>& arguments
+Strong<Array<LuaType>> LuaUserFunction::_call(
+	const Array<LuaType>& arguments
 ) const {
 	return this->_function(
 		arguments);
