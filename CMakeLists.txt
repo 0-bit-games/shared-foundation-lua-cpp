@@ -2,21 +2,25 @@ cmake_minimum_required(VERSION 3.27)
 
 project(fart-lua)
 
-add_library(fart-lua
-	src/state.cpp
-	src/global.cpp
+if (NOT LIBRARY_BUILD_TYPE)
+	set(LIBRARY_BUILD_TYPE SHARED)
+endif()
+
+add_library(fart-lua ${LIBRARY_BUILD_TYPE}
 	src/exceptions/compiler-exception.cpp
-	src/exceptions/runtime-exception.cpp
 	src/exceptions/not-supported-exception.cpp
+	src/exceptions/runtime-exception.cpp
 	src/exceptions/unexpected-type-exception.cpp
-	src/types/type.cpp
+	src/global.cpp
+	src/state.cpp
 	src/types/boolean.cpp
+	src/types/caller.cpp
+	src/types/function.cpp
+	src/types/light-user-data.cpp
 	src/types/number.cpp
 	src/types/string.cpp
-	src/types/function.cpp
-	src/types/caller.cpp
 	src/types/table.cpp
-	src/types/light-user-data.cpp
+	src/types/type.cpp
 	src/types/user-function.cpp
 	src/types/value.cpp)
 
@@ -24,9 +28,9 @@ if (NOT DEFINED LUA_VERSION)
 	set(LUA_VERSION "5.4.6")
 endif()
 
-if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build)
-	file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
-endif()
+set(LUA_ENABLE_SHARED OFF)
+set(LUA_ENABLE_TESTING OFF)
+set(LUA_BUILD_COMPILER OFF)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/lua)
 

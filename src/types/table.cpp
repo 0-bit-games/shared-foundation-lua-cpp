@@ -12,7 +12,6 @@
 
 #include "./boolean.hpp"
 #include "./number.hpp"
-#include "./stab.h"
 
 #include "./table.hpp"
 
