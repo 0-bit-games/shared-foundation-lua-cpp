@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.27)
+cmake_minimum_required(VERSION 3.9)
 
 project(fart-lua)
 
@@ -40,11 +40,12 @@ add_definitions(-DFART_NO_IO -DFART_NO_SOCKET)
 
 target_compile_features(fart-lua PRIVATE cxx_std_17)
 
+set(ARCH_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE}/${CMAKE_SYSTEM_PROCESSOR}")
+
 set_target_properties(fart-lua
 	PROPERTIES
-	ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build"
-	LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build"
-	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
+	LIBRARY_OUTPUT_DIRECTORY "${ARCH_OUTPUT_DIR}/lib"
+	RUNTIME_OUTPUT_DIRECTORY "${ARCH_OUTPUT_DIR}/bin")
 
 target_precompile_headers(fart-lua PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/fart/fart.hpp)
