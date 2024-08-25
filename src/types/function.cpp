@@ -6,7 +6,7 @@
 // See license in LICENSE.
 //
 
-#include "../lua/lua-5.4.6/include/lua.hpp"
+#include "../lua/lua-5.4.7/include/lua.hpp"
 
 #include "../state.hpp"
 #include "../exceptions/exceptions.hpp"

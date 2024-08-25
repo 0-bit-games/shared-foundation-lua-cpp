@@ -6,7 +6,7 @@
 // See license in LICENSE.
 //
 
-#include "./lua/lua-5.4.6/include/lua.hpp"
+#include "./lua/lua-5.4.7/include/lua.hpp"
 
 #include "./exceptions/exceptions.hpp"
 #include "./global.hpp"
@@ -54,6 +54,9 @@ Strong<State> State::fromString(
 }
 
 State::~State() {
+#ifdef FART_LUA_STACK_DEBUG
+	this->printStack("Close");
+#endif /* FART_LUA_STACK_DEBUG */
 	lua_close(*this);
 }
 
@@ -441,18 +444,34 @@ void State::_popStackItem(
 
 	for (size_t idx = 0 ; idx < this->_stack.length() ; idx++) {
 		if (this->_stack[idx]->value == value) {
+
+			ssize_t luaStackIndex = (ssize_t)idx - (ssize_t)this->_stackPointer();
+
 			this->_stack[idx]->value = nullptr;
+
+			if (!this->_stack[idx]->autoPopped) {
+
+				free(this->_stack.removeItemAtIndex(idx));
+
+				lua_remove(*this, luaStackIndex);
+
+				this->_stackPointers = this->_stackPointers
+					.map<size_t>([&](size_t value) {
+						return value > idx ? value - 1 : value;
+					});
+
+				for (size_t rIdx = idx ; rIdx < this->_stack.length() ; rIdx++) {
+					if (this->_stack[idx]->value != nullptr) {
+						this->_stack[rIdx]->value->_stackOffset--;
+					}
+				}
+
+				idx--;
+
+			}
+
 		}
 	}
-
-	int popCount = 0;
-
-	while (this->_stack.length() > 0 && this->_stack.last()->value == nullptr && !this->_stack.last()->autoPopped) {
-		free(this->_stack.removeLast());
-		popCount++;
-	}
-
-	if (popCount > 0) lua_pop(*this, popCount);
 
 	this->_updateRootStackPointer();
 

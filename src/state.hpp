@@ -9,7 +9,7 @@
 #ifndef fart_lua_state_hpp
 #define fart_lua_state_hpp
 
-#include "./lua/lua-5.4.6/include/lua.hpp"
+#include "./lua/lua-5.4.7/include/lua.hpp"
 #include "./fart/fart.hpp"
 
 namespace fart::lua {
@@ -128,7 +128,7 @@ namespace fart::lua {
 		private:
 
 			struct StackItem {
-				const types::LuaType* value;
+				types::LuaType* value;
 				bool autoPopped;
 			};
 
