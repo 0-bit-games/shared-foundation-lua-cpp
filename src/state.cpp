@@ -453,7 +453,7 @@ void State::_popStackItem(
 
 				free(this->_stack.removeItemAtIndex(idx));
 
-				lua_remove(*this, luaStackIndex);
+				lua_remove(*this, (int)luaStackIndex);
 
 				this->_stackPointers = this->_stackPointers
 					.map<size_t>([&](size_t value) {
