@@ -231,26 +231,27 @@ namespace fart::lua {
 
 					Popper(
 						State& state
-					) : indices(),
+					) : items(),
 						state(state) { }
 
 					~Popper() {
 
 						size_t idx;
 
-						while ((idx = indices.indexOf(this->state._stack.length() - 1)) != NotFound) {
-
-							this->indices.removeItemAtIndex(idx);
-
+						while ((idx = items.indexOf(this->state._stack.last())) != NotFound) {
 							free(this->state._stack.removeLast());
-
+							items.removeItemAtIndex(idx);
 						}
 
 						this->state._updateRootStackPointer();
 
+						#ifdef FART_LUA_STACK_DEBUG
+							this->state.printStack("Autopop");
+						#endif /* FART_LUA_STACK_DEBUG */
+
 					}
 
-					Data<size_t> indices;
+					Data<StackItem*> items;
 					State& state;
 
 				} popper(*this);
@@ -259,7 +260,7 @@ namespace fart::lua {
 
 					for (ssize_t idx = this->_stack.length() - 1 ; idx >= 0 ; idx--) {
 						if (this->_stack[idx] != nullptr && this->_stack[idx]->value == &value) {
-							popper.indices.append(idx);
+							popper.items.append(this->_stack[idx]);
 							this->_stack[idx]->autoPopped = true;
 							break;
 						}
