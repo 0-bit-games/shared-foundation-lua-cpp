@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.30)
 
 project(fart-lua)
 
-if (NOT LIBRARY_BUILD_TYPE)
+if(NOT LIBRARY_BUILD_TYPE)
 	set(LIBRARY_BUILD_TYPE SHARED)
 endif()
 
@@ -24,11 +24,11 @@ add_library(fart-lua ${LIBRARY_BUILD_TYPE}
 	src/types/user-function.cpp
 	src/types/value.cpp)
 
-if (NOT DEFINED LUA_VERSION)
+if(NOT DEFINED LUA_VERSION)
 	set(LUA_VERSION "5.4.6")
 endif()
 
-if (${LIBRARY_BUILD_TYPE} STREQUAL "SHARED")
+if(${LIBRARY_BUILD_TYPE} STREQUAL "SHARED")
 	set(LUA_ENABLE_SHARED ON)
 else()
 	set(LUA_ENABLE_SHARED OFF)
@@ -39,7 +39,7 @@ set(LUA_BUILD_COMPILER OFF)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/lua)
 
-if (${LIBRARY_BUILD_TYPE} STREQUAL "SHARED")
+if(${LIBRARY_BUILD_TYPE} STREQUAL "SHARED")
 	target_link_libraries(fart-lua lua_shared)
 else()
 	target_link_libraries(fart-lua lua_static)
