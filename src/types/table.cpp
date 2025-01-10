@@ -46,26 +46,26 @@ Strong<Type> LuaTable::value() noexcept(false) {
 
 Strong<LuaType> LuaTable::get(
 	LuaString& key
-) {
+) const {
 	return this->_get(key);
 }
 
 Strong<LuaType> LuaTable::get(
 	const String& key
-) {
+) const {
 	return this->get(
 		this->state().string(key));
 }
 
 Strong<LuaType> LuaTable::get(
 	LuaNumber& key
-) {
+) const {
 	return this->_get(key);
 }
 
 Strong<LuaType> LuaTable::get(
 	int64_t key
-) {
+) const {
 	return this->get(
 		this->state().number(key));
 }
@@ -209,7 +209,7 @@ LuaTable::LuaTable(
 
 Strong<LuaType> LuaTable::_get(
 	LuaType& key
-) {
+) const {
 
 	this->_state
 		->_withAutoPopped(

@@ -112,15 +112,7 @@ Strong<Array<LuaType>> Caller::exec() const noexcept(false) {
 		throw RuntimeException(message);
 	}
 
-	Strong<Array<LuaType>> result;
-
-	while (this->_function.state()._available()) {
-		result
-			->append(
-				LuaType::_pick(
-					this->_function.state()));
-	}
-
-	return result;
+	return LuaType::_pickUnclaimed(
+		this->_function.state());
 
 }

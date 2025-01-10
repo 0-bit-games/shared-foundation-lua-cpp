@@ -200,3 +200,19 @@ Strong<LuaType> LuaType::_pick(
 			throw NotSupportedException();
 	}
 }
+
+Strong<Array<LuaType>> LuaType::_pickUnclaimed(
+	State& state) {
+
+	Strong<Array<LuaType>> result;
+
+	while (state._available()) {
+		result
+			->append(
+				LuaType::_pick(
+					state));
+	}
+
+	return result;
+
+}

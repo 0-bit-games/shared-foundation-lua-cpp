@@ -98,6 +98,9 @@ namespace fart::lua::types {
 				State& state,
 				ssize_t offset = 0);
 
+			static Strong<Array<LuaType>> _pickUnclaimed(
+				State& state);
+
 			Strong<State> _state;
 			size_t _stackOffset;
 

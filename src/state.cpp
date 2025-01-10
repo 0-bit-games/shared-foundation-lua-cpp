@@ -21,36 +21,60 @@ using namespace fart::lua::types;
 using namespace fart::lua::exceptions;
 using namespace fart::tools;
 
-Strong<State> State::fromFile(
-	const String& filename,
+State::State(
 	Libraries libraries
-) noexcept(false) {
-	return Strong<State>(
-		libraries)
-		.with([&](State& state) {
-			filename
-				.withCString([&](const char* filename) {
-					if (luaL_dofile(state, filename) != 0) {
-						throw CompilerException();
-					}
-				});
-		});
-}
+) : _l(luaL_newstate()),
+	_stack(),
+	_stackPointers({ 0 }) {
 
-Strong<State> State::fromString(
-	const String& string,
-	Libraries libraries
-) noexcept(false) {
-	return Strong<State>(
-		libraries)
-		.with([&](State& state) {
-			string
-				.withCString([&](const char* string) {
-					if (luaL_dostring(state, string) != 0) {
-						throw CompilerException();
-					}
-				});
-		});
+	luaL_requiref(*this, "_G", luaopen_base, 1);
+	lua_pop(*this, 1);
+
+	if (((uint16_t)(libraries & Libraries::Coroutines)) != 0) {
+		luaL_requiref(*this, LUA_COLIBNAME, luaopen_coroutine, 1);
+		lua_pop(*this, 1);
+	}
+
+	if (((uint16_t)(libraries & Libraries::Debug)) != 0) {
+		luaL_requiref(*this, LUA_DBLIBNAME, luaopen_debug, 1);
+		lua_pop(*this, 1);
+	}
+
+	if (((uint16_t)(libraries & Libraries::IO)) != 0) {
+		luaL_requiref(*this, LUA_IOLIBNAME, luaopen_io, 1);
+		lua_pop(*this, 1);
+	}
+
+	if (((uint16_t)(libraries & Libraries::Math)) != 0) {
+		luaL_requiref(*this, LUA_MATHLIBNAME, luaopen_math, 1);
+		lua_pop(*this, 1);
+	}
+
+	if (((uint16_t)(libraries & Libraries::OS)) != 0) {
+		luaL_requiref(*this, LUA_OSLIBNAME, luaopen_os, 1);
+		lua_pop(*this, 1);
+	}
+
+	if (((uint16_t)(libraries & Libraries::Package)) != 0) {
+		luaL_requiref(*this, LUA_LOADLIBNAME, luaopen_package, 1);
+		lua_pop(*this, 1);
+	}
+
+	if (((uint16_t)(libraries & Libraries::String)) != 0) {
+		luaL_requiref(*this, LUA_STRLIBNAME, luaopen_string, 1);
+		lua_pop(*this, 1);
+	}
+
+	if (((uint16_t)(libraries & Libraries::Table)) != 0) {
+		luaL_requiref(*this, LUA_TABLIBNAME, luaopen_table, 1);
+		lua_pop(*this, 1);
+	}
+
+	if (((uint16_t)(libraries & Libraries::UTF8)) != 0) {
+		luaL_requiref(*this, LUA_UTF8LIBNAME, luaopen_utf8, 1);
+		lua_pop(*this, 1);
+	}
+
 }
 
 State::~State() {
@@ -58,6 +82,38 @@ State::~State() {
 	this->printStack("Close");
 #endif /* FART_LUA_STACK_DEBUG */
 	lua_close(*this);
+}
+
+Strong<Array<LuaType>> State::loadFile(
+	const String& filename
+) noexcept(false) {
+
+	filename
+		.withCString([&](const char* filename) {
+			if (luaL_dofile(*this, filename) != 0) {
+				throw CompilerException();
+			}
+		});
+
+	return LuaType::_pickUnclaimed(
+		*this);
+
+}
+
+Strong<Array<LuaType>> State::loadString(
+	const String& string
+) noexcept(false) {
+
+	string
+		.withCString([&](const char* string) {
+			if (luaL_dostring(*this, string) != 0) {
+				throw CompilerException();
+			}
+		});
+
+	return LuaType::_pickUnclaimed(
+		*this);
+
 }
 
 Strong<Global> State::global() {
@@ -311,62 +367,6 @@ void State::printStack(
 }
 
 #endif /* FART_LUA_STACK_DEBUG */
-
-State::State(
-	Libraries libraries
-) : _l(luaL_newstate()),
-	_stack(),
-	_stackPointers({ 0 }) {
-
-	luaL_requiref(*this, "_G", luaopen_base, 1);
-	lua_pop(*this, 1);
-
-	if (((uint16_t)(libraries & Libraries::Coroutines)) != 0) {
-		luaL_requiref(*this, LUA_COLIBNAME, luaopen_coroutine, 1);
-		lua_pop(*this, 1);
-	}
-
-	if (((uint16_t)(libraries & Libraries::Debug)) != 0) {
-		luaL_requiref(*this, LUA_DBLIBNAME, luaopen_debug, 1);
-		lua_pop(*this, 1);
-	}
-
-	if (((uint16_t)(libraries & Libraries::IO)) != 0) {
-		luaL_requiref(*this, LUA_IOLIBNAME, luaopen_io, 1);
-		lua_pop(*this, 1);
-	}
-
-	if (((uint16_t)(libraries & Libraries::Math)) != 0) {
-		luaL_requiref(*this, LUA_MATHLIBNAME, luaopen_math, 1);
-		lua_pop(*this, 1);
-	}
-
-	if (((uint16_t)(libraries & Libraries::OS)) != 0) {
-		luaL_requiref(*this, LUA_OSLIBNAME, luaopen_os, 1);
-		lua_pop(*this, 1);
-	}
-
-	if (((uint16_t)(libraries & Libraries::Package)) != 0) {
-		luaL_requiref(*this, LUA_LOADLIBNAME, luaopen_package, 1);
-		lua_pop(*this, 1);
-	}
-
-	if (((uint16_t)(libraries & Libraries::String)) != 0) {
-		luaL_requiref(*this, LUA_STRLIBNAME, luaopen_string, 1);
-		lua_pop(*this, 1);
-	}
-
-	if (((uint16_t)(libraries & Libraries::Table)) != 0) {
-		luaL_requiref(*this, LUA_TABLIBNAME, luaopen_table, 1);
-		lua_pop(*this, 1);
-	}
-
-	if (((uint16_t)(libraries & Libraries::UTF8)) != 0) {
-		luaL_requiref(*this, LUA_UTF8LIBNAME, luaopen_utf8, 1);
-		lua_pop(*this, 1);
-	}
-
-}
 
 #ifdef FART_LUA_STACK_DEBUG
 

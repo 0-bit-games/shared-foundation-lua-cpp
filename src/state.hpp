@@ -58,20 +58,21 @@ namespace fart::lua {
 
 			};
 
-			static Strong<State> fromFile(
-				const String& filename,
-				Libraries libraries = static_cast<Libraries>(UINT16_MAX)
-			) noexcept(false);
-
-			static Strong<State> fromString(
-				const String& string,
-				Libraries libraries = static_cast<Libraries>(UINT16_MAX)
-			) noexcept(false);
+			State(
+				Libraries libraries = static_cast<Libraries>(UINT16_MAX));
 
 			State(
 				const State& other) = delete;
 
 			virtual ~State();
+
+			Strong<Array<types::LuaType>> loadFile(
+				const String& filename
+			) noexcept(false);
+
+			Strong<Array<types::LuaType>> loadString(
+				const String& string
+			) noexcept(false);
 
 			Strong<Global> global();
 
@@ -131,9 +132,6 @@ namespace fart::lua {
 				types::LuaType* value;
 				bool autoPopped;
 			};
-
-			State(
-				Libraries libraries = static_cast<Libraries>(UINT16_MAX));
 
 #ifdef FART_LUA_STACK_DEBUG
 			Array<String> _fartStackDescriptions() const;

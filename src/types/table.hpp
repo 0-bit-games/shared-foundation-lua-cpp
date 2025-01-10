@@ -30,16 +30,20 @@ namespace fart::lua::types {
 			Strong<Type> value() noexcept(false);
 
 			Strong<LuaType> get(
-				LuaString& key);
+				LuaString& key
+			) const;
 
 			Strong<LuaType> get(
-				const String& key);
+				const String& key
+			) const;
 
 			Strong<LuaType> get(
-				LuaNumber& key);
+				LuaNumber& key
+			) const;
 
 			Strong<LuaType> get(
-				int64_t key);
+				int64_t key
+			) const;
 
 			void set(
 				LuaString& key,
@@ -81,7 +85,8 @@ namespace fart::lua::types {
 				State& state);
 
 			Strong<LuaType> _get(
-				LuaType& key);
+				LuaType& key
+			) const;
 
 			void _set(
 				LuaType& key,
