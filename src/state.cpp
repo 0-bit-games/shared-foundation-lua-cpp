@@ -30,6 +30,11 @@ State::State(
 	luaL_requiref(*this, "_G", luaopen_base, 1);
 	lua_pop(*this, 1);
 
+	if (((uint16_t)(libraries & Libraries::Package)) != 0) {
+		luaL_requiref(*this, LUA_LOADLIBNAME, luaopen_package, 1);
+		lua_pop(*this, 1);
+	}
+
 	if (((uint16_t)(libraries & Libraries::Coroutines)) != 0) {
 		luaL_requiref(*this, LUA_COLIBNAME, luaopen_coroutine, 1);
 		lua_pop(*this, 1);
@@ -52,11 +57,6 @@ State::State(
 
 	if (((uint16_t)(libraries & Libraries::OS)) != 0) {
 		luaL_requiref(*this, LUA_OSLIBNAME, luaopen_os, 1);
-		lua_pop(*this, 1);
-	}
-
-	if (((uint16_t)(libraries & Libraries::Package)) != 0) {
-		luaL_requiref(*this, LUA_LOADLIBNAME, luaopen_package, 1);
 		lua_pop(*this, 1);
 	}
 
@@ -85,35 +85,29 @@ State::~State() {
 }
 
 Strong<Array<LuaType>> State::loadFile(
-	const String& filename
+	const String& filename,
+	bool doIt
 ) noexcept(false) {
-
-	filename
-		.withCString([&](const char* filename) {
-			if (luaL_dofile(*this, filename) != 0) {
-				throw CompilerException();
-			}
+	return this->_load(
+		[&]() {
+			return filename
+				.mapCString<int>([&](const char* filename) {
+					return doIt ? luaL_dofile(*this, filename) : luaL_loadfile(*this, filename);
+				});
 		});
-
-	return LuaType::_pickUnclaimed(
-		*this);
-
 }
 
 Strong<Array<LuaType>> State::loadString(
-	const String& string
+	const String& string,
+	bool doIt
 ) noexcept(false) {
-
-	string
-		.withCString([&](const char* string) {
-			if (luaL_dostring(*this, string) != 0) {
-				throw CompilerException();
-			}
+	return this->_load(
+		[&]() {
+			return string
+				.mapCString<int>([&](const char* string) {
+					return doIt ? luaL_dostring(*this, string) : luaL_loadstring(*this, string);
+				});
 		});
-
-	return LuaType::_pickUnclaimed(
-		*this);
-
 }
 
 Strong<Global> State::global() {
@@ -171,21 +165,25 @@ Strong<LuaUserFunction> State::function(
 	const ::function<Strong<Array<LuaType>>(const Array<LuaType>&)> function
 ) {
 
-	auto userData = this->lightUserData((void*)this);
-	auto index = this->number((int64_t)this->_stack.length() + 1);
+	auto userFunction = Strong<LuaUserFunction>(
+		*this,
+		function);
+
+	LuaUserFunction* userFunctionReference = userFunction;
+
+	auto userData = this->lightUserData((void*)userFunctionReference);
 
 	this->_withAutoPopped(
 		[&](const ::function<void(const LuaType&)> autoPop) {
 
 			autoPop(userData->push());
-			autoPop(index->push());
 
-			lua_pushcclosure(*this, LuaUserFunction::callback, 2);
+			lua_pushcclosure(*this, LuaUserFunction::callback, 1);
 
 		});
 
-	return this->_pushStackItem<LuaUserFunction>(
-		function);
+	return this->_pushCustomStackItem<LuaUserFunction>(
+		userFunction);
 
 }
 
@@ -504,5 +502,32 @@ ssize_t State::_nextIndex() const {
 	}
 
 	return -this->_available();
+
+}
+
+Strong<Array<LuaType>> State::_load(
+	::function<int()> loader
+) {
+
+	if (loader() != 0) {
+
+		Strong<Type> error = LuaType::_pick(
+			*this)
+			->fart(true);
+
+		if (error != nullptr && error->kind() == Type::Kind::string) {
+			error
+				.as<String>()
+					->withCString([](const char* error) {
+						throw CompilerException(error);
+					});
+		} else {
+			throw CompilerException();
+		}
+
+	}
+
+	return LuaType::_pickUnclaimed(
+		*this);
 
 }

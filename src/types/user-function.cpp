@@ -19,56 +19,64 @@ int LuaUserFunction::callback(
 	lua_State* L
 ) {
 
-	State& state = *(State*)lua_touserdata(L, lua_upvalueindex(1));
-	int64_t index = lua_tointeger(L, lua_upvalueindex(2));
+	LuaUserFunction* userFunction = (LuaUserFunction*)lua_touserdata(L, lua_upvalueindex(1));
+	State& state = userFunction->state();
 
-	Array<LuaType> arguments;
+	return userFunction
+		->state()
+		._withStackPointer<int>(
+			0,
+			[&]() {
 
-	try {
+				Array<LuaType> arguments;
 
-		while (state._available() > 0) {
-			arguments.append(
-				LuaType::_pick(
-					state));
-		}
+				try {
 
-		return state
-			._withAutoPopped<int>([&](const ::function<void(const LuaType&)> autoPop) {
+					while (state._available() > 0) {
+						arguments.append(
+							LuaType::_pick(
+								state));
+					}
 
-				auto result = ((LuaUserFunction*)state._stack[index]->value)
-					->_call(
-						arguments);
+					return state
+						._withAutoPopped<int>([&](const ::function<void(const LuaType&)> autoPop) {
 
-				result
-					->forEach([&](const LuaType& result) {
-						autoPop(result);
-					});
+							auto result = userFunction
+								->_call(
+									arguments);
 
-				return result->count();
+							result
+								->forEach([&](const LuaType& result) {
+									autoPop(result);
+								});
+
+							return result->count();
+
+						});
+
+				} catch (const RuntimeException& exception) {
+					exception.message()
+						.withCString([&](const char* message) {
+							lua_pushstring(
+								state,
+								message);
+						});
+				} catch (const Exception& exception) {
+					lua_pushstring(
+						state,
+						exception.description());
+				} catch (...) {
+					lua_pushstring(
+						state,
+						"Unknown exception occurred.");
+				}
+
+				lua_error(
+					state);
+
+				return 0;
 
 			});
-
-	} catch (const RuntimeException& exception) {
-		exception.message()
-			.withCString([&](const char* message) {
-				lua_pushstring(
-					state,
-					message);
-			});
-	} catch (const Exception& exception) {
-		lua_pushstring(
-			state,
-			exception.description());
-	} catch (...) {
-		lua_pushstring(
-			state,
-			"Unknown exception occurred.");
-	}
-
-	lua_error(
-		state);
-
-	return 0;
 
 }
 

@@ -18,10 +18,17 @@ namespace fart::lua::exceptions {
 		public:
 
 			CompilerException();
+
+			CompilerException(
+				const char* message);
 			virtual ~CompilerException();
 
 			virtual const char* description() const override;
 			virtual Exception* clone() const override;
+
+		private:
+
+			const char* _message;
 
 	};
 

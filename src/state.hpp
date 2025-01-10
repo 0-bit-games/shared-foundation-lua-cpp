@@ -67,11 +67,13 @@ namespace fart::lua {
 			virtual ~State();
 
 			Strong<Array<types::LuaType>> loadFile(
-				const String& filename
+				const String& filename,
+				bool doIt = false
 			) noexcept(false);
 
 			Strong<Array<types::LuaType>> loadString(
-				const String& string
+				const String& string,
+				bool doIt = false
 			) noexcept(false);
 
 			Strong<Global> global();
@@ -140,14 +142,10 @@ namespace fart::lua {
 
 			void _updateRootStackPointer();
 
-			template<
-				typename T,
-				typename... Args>
-			Strong<T> _pushStackItem(
-				Args&&... args
+			template<typename T>
+			Strong<T> _pushCustomStackItem(
+				Strong<T> value
 			) {
-
-				Strong<T> value(*this, std::forward<Args>(args)...);
 
 				value->_stackOffset = this->_stack.length();
 
@@ -168,6 +166,16 @@ namespace fart::lua {
 
 				return value;
 
+			}
+
+			template<
+				typename T,
+				typename... Args>
+			Strong<T> _pushStackItem(
+				Args&&... args
+			) {
+				return this->_pushCustomStackItem<T>(
+					Strong<T>(*this, std::forward<Args>(args)...));
 			}
 
 			template<
@@ -214,6 +222,7 @@ namespace fart::lua {
 
 				this->_stackPointers
 					.append((this->_stack.length() - 1) + offset);
+
 				T result = transform();
 
 				return result;
@@ -282,6 +291,10 @@ namespace fart::lua {
 
 			size_t _available() const;
 			ssize_t _nextIndex() const;
+
+			Strong<Array<types::LuaType>> _load(
+				::function<int()> loader
+			);
 
 			lua_State* _l;
 			Data<StackItem*> _stack;
