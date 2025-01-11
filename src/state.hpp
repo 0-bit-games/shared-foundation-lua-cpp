@@ -27,6 +27,12 @@ namespace fart::lua {
 	}
 
 	class Global;
+	class State;
+
+	using UserFunctionCallback = Strong<Array<types::LuaType>>(*)(
+		State& state,
+		void* context,
+		const Array<types::LuaType>& arguments);
 
 	class State : public Object {
 
@@ -96,10 +102,8 @@ namespace fart::lua {
 				const String& value);
 
 			Strong<types::LuaUserFunction> function(
-				const ::function<Strong<Array<types::LuaType>>(const Array<types::LuaType>&)> function);
-
-			Strong<types::LuaUserFunction> function(
-				const ::function<Strong<Array<>>(const Array<>&)> function);
+				UserFunctionCallback callback,
+				void* context = nullptr);
 
 			Strong<types::LuaTable> table();
 

@@ -27,14 +27,7 @@ namespace fart::lua::types {
 		private:
 
 			LuaUserFunction(
-				State& state,
-				const ::function<Strong<Array<LuaType>>(const Array<LuaType>&)> function);
-
-			Strong<Array<LuaType>> _call(
-				const Array<LuaType>& argument
-			) const;
-
-			const ::function<Strong<Array<LuaType>>(const Array<LuaType>& arguments)> _function;
+				State& state);
 
 	};
 

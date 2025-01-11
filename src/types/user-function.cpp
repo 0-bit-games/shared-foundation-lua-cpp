@@ -19,12 +19,12 @@ int LuaUserFunction::callback(
 	lua_State* L
 ) {
 
-	LuaUserFunction* userFunction = (LuaUserFunction*)lua_touserdata(L, lua_upvalueindex(1));
-	State& state = userFunction->state();
+	fart::lua::State* state = (fart::lua::State *)lua_touserdata(L, lua_upvalueindex(1));
+	UserFunctionCallback callback = (UserFunctionCallback)lua_touserdata(L, lua_upvalueindex(2));
+	void* context = lua_touserdata(L, lua_upvalueindex(3));
 
-	return userFunction
-		->state()
-		._withStackPointer<int>(
+	return state
+		->_withStackPointer<int>(
 			0,
 			[&]() {
 
@@ -32,18 +32,19 @@ int LuaUserFunction::callback(
 
 				try {
 
-					while (state._available() > 0) {
+					while (state->_available() > 0) {
 						arguments.append(
 							LuaType::_pick(
-								state));
+								*state));
 					}
 
 					return state
-						._withAutoPopped<int>([&](const ::function<void(const LuaType&)> autoPop) {
+						->_withAutoPopped<int>([&](const ::function<void(const LuaType&)> autoPop) {
 
-							auto result = userFunction
-								->_call(
-									arguments);
+							auto result = callback(
+								*state,
+								context,
+								arguments);
 
 							result
 								->forEach([&](const LuaType& result) {
@@ -58,21 +59,21 @@ int LuaUserFunction::callback(
 					exception.message()
 						.withCString([&](const char* message) {
 							lua_pushstring(
-								state,
+								*state,
 								message);
 						});
 				} catch (const Exception& exception) {
 					lua_pushstring(
-						state,
+						*state,
 						exception.description());
 				} catch (...) {
 					lua_pushstring(
-						state,
+						*state,
 						"Unknown exception occurred.");
 				}
 
 				lua_error(
-					state);
+					*state);
 
 				return 0;
 
@@ -81,14 +82,5 @@ int LuaUserFunction::callback(
 }
 
 LuaUserFunction::LuaUserFunction(
-	State& state,
-	const ::function<Strong<Array<LuaType>>(const Array<LuaType>& arguments)> function
-) : LuaFunction(state),
-	_function(function) { }
-
-Strong<Array<LuaType>> LuaUserFunction::_call(
-	const Array<LuaType>& arguments
-) const {
-	return this->_function(
-		arguments);
-}
+	State& state
+) : LuaFunction(state) { }

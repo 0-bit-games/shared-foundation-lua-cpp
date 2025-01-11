@@ -162,44 +162,27 @@ Strong<LuaString> State::string(
 }
 
 Strong<LuaUserFunction> State::function(
-	const ::function<Strong<Array<LuaType>>(const Array<LuaType>&)> function
+	UserFunctionCallback callback,
+	void* context
 ) {
 
-	auto userFunction = Strong<LuaUserFunction>(
-		*this,
-		function);
-
-	LuaUserFunction* userFunctionReference = userFunction;
-
-	auto userData = this->lightUserData((void*)userFunctionReference);
+	auto stateUserData = this->lightUserData(this);
+	auto callbackUserData = this->lightUserData((void*)callback);
+	auto contextUserData = this->lightUserData(context);
 
 	this->_withAutoPopped(
 		[&](const ::function<void(const LuaType&)> autoPop) {
 
-			autoPop(userData->push());
+			autoPop(stateUserData->push());
+			autoPop(callbackUserData->push());
+			autoPop(contextUserData->push());
 
-			lua_pushcclosure(*this, LuaUserFunction::callback, 1);
+			lua_pushcclosure(*this, LuaUserFunction::callback, 3);
 
 		});
 
-	return this->_pushCustomStackItem<LuaUserFunction>(
-		userFunction);
+	return this->_pushStackItem<LuaUserFunction>();
 
-}
-
-Strong<LuaUserFunction> State::function(
-	const ::function<Strong<Array<>>(const Array<>&)> function
-) {
-	return this->function([this,function](const Array<LuaType>& arguments) {
-		return function(
-			arguments
-				.map<Type>([&](const LuaType& value) {
-					return value.fart();
-				}))
-			->map<LuaType>([&](const Type& value) {
-				return this->fart(value);
-			});
-	});
 }
 
 Strong<LuaTable> State::table() {
