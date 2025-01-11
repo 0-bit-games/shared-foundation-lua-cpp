@@ -27,6 +27,10 @@ State::State(
 	_stack(),
 	_stackPointers({ 0 }) {
 
+	State** state = (State**)lua_getextraspace(_l);
+
+	*state = this;
+
 	luaL_requiref(*this, "_G", luaopen_base, 1);
 	lua_pop(*this, 1);
 
@@ -166,18 +170,16 @@ Strong<LuaUserFunction> State::function(
 	void* context
 ) {
 
-	auto stateUserData = this->lightUserData(this);
 	auto callbackUserData = this->lightUserData((void*)callback);
 	auto contextUserData = this->lightUserData(context);
 
 	this->_withAutoPopped(
 		[&](const ::function<void(const LuaType&)> autoPop) {
 
-			autoPop(stateUserData->push());
 			autoPop(callbackUserData->push());
 			autoPop(contextUserData->push());
 
-			lua_pushcclosure(*this, LuaUserFunction::callback, 3);
+			lua_pushcclosure(*this, LuaUserFunction::callback, 2);
 
 		});
 

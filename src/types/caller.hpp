@@ -45,9 +45,13 @@ namespace fart::lua::types {
 			Caller& argument(
 				const Type& value);
 
-			Strong<Array<LuaType>> exec() const noexcept(false);
+			Strong<Array<LuaType>> exec(
+				double timeout = 0.0
+			) const noexcept(false);
 
 		private:
+
+			static void _executionHook(lua_State* state, lua_Debug* debug);
 
 			Caller(
 				LuaFunction& function);

@@ -9,6 +9,8 @@
 #ifndef fart_lua_state_hpp
 #define fart_lua_state_hpp
 
+#include <time.h>
+
 #include "./lua/lua-5.4.7/include/lua.hpp"
 #include "./fart/fart.hpp"
 
@@ -303,6 +305,8 @@ namespace fart::lua {
 			lua_State* _l;
 			Data<StackItem*> _stack;
 			Data<size_t> _stackPointers;
+
+			time_t _currentCallStartTime;
 
 	};
 

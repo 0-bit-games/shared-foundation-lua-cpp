@@ -19,9 +19,10 @@ int LuaUserFunction::callback(
 	lua_State* L
 ) {
 
-	fart::lua::State* state = (fart::lua::State *)lua_touserdata(L, lua_upvalueindex(1));
-	UserFunctionCallback callback = (UserFunctionCallback)lua_touserdata(L, lua_upvalueindex(2));
-	void* context = lua_touserdata(L, lua_upvalueindex(3));
+	fart::lua::State* state = *((State**)lua_getextraspace(L));
+
+	UserFunctionCallback callback = (UserFunctionCallback)lua_touserdata(L, lua_upvalueindex(1));
+	void* context = lua_touserdata(L, lua_upvalueindex(2));
 
 	return state
 		->_withStackPointer<int>(

@@ -6,6 +6,8 @@
 // See license in LICENSE.
 //
 
+#include <time.h>
+
 #include "./function.hpp"
 #include "../exceptions/exceptions.hpp"
 
@@ -13,10 +15,6 @@
 
 using namespace fart::lua::types;
 using namespace fart::lua::exceptions;
-
-Caller::Caller(
-	LuaFunction& function
-) : _function(function), _arguments() { }
 
 Caller& Caller::argument(
 	LuaBoolean& value
@@ -75,7 +73,9 @@ Caller& Caller::argument(
 	return *this;
 }
 
-Strong<Array<LuaType>> Caller::exec() const noexcept(false) {
+Strong<Array<LuaType>> Caller::exec(
+	double timeout
+) const noexcept(false) {
 
 	bool success = this->_function
 		.state()
@@ -101,10 +101,28 @@ Strong<Array<LuaType>> Caller::exec() const noexcept(false) {
 					._withStackPointer<bool>(
 						0,
 						[&]() {
+
+							if (timeout > 0.0) {
+
+								this->_function.state()._currentCallStartTime = time(nullptr);
+
+								lua_sethook(
+									this->_function.state(),
+									Caller::_executionHook,
+									LUA_MASKCOUNT,
+									1000);
+
+							}
+
 							return lua_pcall(fnc->state(), (int)this->_arguments.count(), 1, 0) == LUA_OK;
+
 						});
 
 			});
+
+	if (timeout > 0.0) {
+		lua_sethook(this->_function.state(), nullptr, 0, 0);
+	}
 
 	if (!success) {
 		String message = lua_tostring(this->_function.state(), -1);
@@ -114,5 +132,25 @@ Strong<Array<LuaType>> Caller::exec() const noexcept(false) {
 
 	return LuaType::_pickUnclaimed(
 		this->_function.state());
+
+}
+
+Caller::Caller(
+	LuaFunction& function
+) : _function(function), _arguments() { }
+
+void Caller::_executionHook(
+	lua_State* L,
+	lua_Debug*
+) {
+
+	State* state = *(State **)lua_getextraspace(L);
+
+	time_t currentTime = time(nullptr);
+
+	if (difftime(currentTime, state->_currentCallStartTime) > 0.0) {
+		lua_sethook(*state, nullptr, 0, 0);
+		luaL_error(*state, "engine.errors.code.executionTimeout");
+	}
 
 }
