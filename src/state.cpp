@@ -22,8 +22,10 @@ using namespace fart::lua::exceptions;
 using namespace fart::tools;
 
 State::State(
-	Libraries libraries
-) : _l(luaL_newstate()),
+	Libraries libraries,
+	bool debug
+) : _isDebug(debug),
+	_l(luaL_newstate()),
 	_stack(),
 	_stackPointers({ 0 }) {
 
@@ -41,11 +43,6 @@ State::State(
 
 	if (((uint16_t)(libraries & Libraries::Coroutines)) != 0) {
 		luaL_requiref(*this, LUA_COLIBNAME, luaopen_coroutine, 1);
-		lua_pop(*this, 1);
-	}
-
-	if (((uint16_t)(libraries & Libraries::Debug)) != 0) {
-		luaL_requiref(*this, LUA_DBLIBNAME, luaopen_debug, 1);
 		lua_pop(*this, 1);
 	}
 
@@ -79,6 +76,21 @@ State::State(
 		lua_pop(*this, 1);
 	}
 
+	int hookMask = LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE;
+	int hookCount = 0;
+
+	if (debug) {
+
+		hookMask |= LUA_MASKCOUNT;
+		hookCount = 1000;
+
+		luaL_requiref(*this, LUA_DBLIBNAME, luaopen_debug, 1);
+		lua_pop(*this, 1);
+
+	}
+
+	lua_sethook(*this, State::_hook, hookMask, hookCount);
+
 }
 
 State::~State() {
@@ -86,6 +98,10 @@ State::~State() {
 	this->printStack("Close");
 #endif /* FART_LUA_STACK_DEBUG */
 	lua_close(*this);
+}
+
+bool State::isDebug() const {
+	return this->_isDebug;
 }
 
 Strong<Array<LuaType>> State::loadFile(
@@ -514,5 +530,25 @@ Strong<Array<LuaType>> State::_load(
 
 	return LuaType::_pickUnclaimed(
 		*this);
+
+}
+
+void State::_hook(
+	lua_State* L,
+	lua_Debug* ar
+) {
+
+	State* state = *(State**)lua_getextraspace(L);
+
+	if (state->_currentCall != nullptr) {
+
+		time_t now = time(nullptr);
+
+		if (difftime(now, state->_currentCall->startTime) >= state->_currentCall->timeout) {
+			lua_sethook(*state, nullptr, 0, 0);
+			luaL_error(*state, "errors.engine.code.executionTimeout");
+		}
+
+	}
 
 }

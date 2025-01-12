@@ -51,8 +51,6 @@ namespace fart::lua::types {
 
 		private:
 
-			static void _executionHook(lua_State* state, lua_Debug* debug);
-
 			Caller(
 				LuaFunction& function);
 

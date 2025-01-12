@@ -48,17 +48,16 @@ namespace fart::lua {
 
 			enum class Libraries : uint16_t {
 
-				None       = 0,
+				None        = 0,
 
 				Coroutines  = 1 << 0,
-				Debug       = 1 << 1,
-				IO          = 1 << 2,
-				Math        = 1 << 3,
-				OS          = 1 << 4,
-				Package     = 1 << 5,
-				String      = 1 << 6,
-				Table       = 1 << 7,
-				UTF8        = 1 << 8,
+				IO          = 1 << 1,
+				Math        = 1 << 2,
+				OS          = 1 << 3,
+				Package     = 1 << 4,
+				String      = 1 << 5,
+				Table       = 1 << 6,
+				UTF8        = 1 << 7,
 
 				NonExternal = Coroutines | Math | String | Table | UTF8,
 				NonIO       = NonExternal | Package,
@@ -67,12 +66,15 @@ namespace fart::lua {
 			};
 
 			State(
-				Libraries libraries = static_cast<Libraries>(UINT16_MAX));
+				Libraries libraries = Libraries::All,
+				bool debug = false);
 
 			State(
 				const State& other) = delete;
 
 			virtual ~State();
+
+			bool isDebug() const;
 
 			Strong<Array<types::LuaType>> loadFile(
 				const String& filename,
@@ -139,6 +141,11 @@ namespace fart::lua {
 			struct StackItem {
 				types::LuaType* value;
 				bool autoPopped;
+			};
+
+			struct Call {
+				time_t startTime;
+				double timeout;
 			};
 
 #ifdef FART_LUA_STACK_DEBUG
@@ -302,11 +309,18 @@ namespace fart::lua {
 				::function<int()> loader
 			);
 
+			static void _hook(
+				lua_State* l,
+				lua_Debug* ar
+			);
+
+			bool _isDebug;
+
 			lua_State* _l;
 			Data<StackItem*> _stack;
 			Data<size_t> _stackPointers;
 
-			time_t _currentCallStartTime;
+			Call* _currentCall;
 
 	};
 

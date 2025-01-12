@@ -102,16 +102,13 @@ Strong<Array<LuaType>> Caller::exec(
 						0,
 						[&]() {
 
+							State::Call call = {
+								time(nullptr),
+								timeout
+							};
+
 							if (timeout > 0.0) {
-
-								this->_function.state()._currentCallStartTime = time(nullptr);
-
-								lua_sethook(
-									this->_function.state(),
-									Caller::_executionHook,
-									LUA_MASKCOUNT,
-									1000);
-
+								this->_function.state()._currentCall = &call;
 							}
 
 							return lua_pcall(fnc->state(), (int)this->_arguments.count(), 1, 0) == LUA_OK;
@@ -121,7 +118,7 @@ Strong<Array<LuaType>> Caller::exec(
 			});
 
 	if (timeout > 0.0) {
-		lua_sethook(this->_function.state(), nullptr, 0, 0);
+		this->_function.state()._currentCall = nullptr;
 	}
 
 	if (!success) {
@@ -138,19 +135,3 @@ Strong<Array<LuaType>> Caller::exec(
 Caller::Caller(
 	LuaFunction& function
 ) : _function(function), _arguments() { }
-
-void Caller::_executionHook(
-	lua_State* L,
-	lua_Debug*
-) {
-
-	State* state = *(State **)lua_getextraspace(L);
-
-	time_t currentTime = time(nullptr);
-
-	if (difftime(currentTime, state->_currentCallStartTime) > 0.0) {
-		lua_sethook(*state, nullptr, 0, 0);
-		luaL_error(*state, "engine.errors.code.executionTimeout");
-	}
-
-}
