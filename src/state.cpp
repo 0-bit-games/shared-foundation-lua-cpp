@@ -22,10 +22,8 @@ using namespace fart::lua::exceptions;
 using namespace fart::tools;
 
 State::State(
-	Libraries libraries,
-	bool debug
-) : _isDebug(debug),
-	_l(luaL_newstate()),
+	Libraries libraries
+) : _l(luaL_newstate()),
 	_stack(),
 	_stackPointers({ 0 }) {
 
@@ -76,20 +74,7 @@ State::State(
 		lua_pop(*this, 1);
 	}
 
-	int hookMask = LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE;
-	int hookCount = 0;
-
-	if (debug) {
-
-		hookMask |= LUA_MASKCOUNT;
-		hookCount = 1000;
-
-		luaL_requiref(*this, LUA_DBLIBNAME, luaopen_debug, 1);
-		lua_pop(*this, 1);
-
-	}
-
-	lua_sethook(*this, State::_hook, hookMask, hookCount);
+	lua_sethook(*this, State::_hook, LUA_MASKCOUNT, 1000);
 
 }
 
@@ -98,10 +83,6 @@ State::~State() {
 	this->printStack("Close");
 #endif /* FART_LUA_STACK_DEBUG */
 	lua_close(*this);
-}
-
-bool State::isDebug() const {
-	return this->_isDebug;
 }
 
 Strong<Array<LuaType>> State::loadFile(
@@ -535,7 +516,7 @@ Strong<Array<LuaType>> State::_load(
 
 void State::_hook(
 	lua_State* L,
-	lua_Debug* ar
+	lua_Debug*
 ) {
 
 	State* state = *(State**)lua_getextraspace(L);

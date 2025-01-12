@@ -66,15 +66,12 @@ namespace fart::lua {
 			};
 
 			State(
-				Libraries libraries = Libraries::All,
-				bool debug = false);
+				Libraries libraries = Libraries::All);
 
 			State(
 				const State& other) = delete;
 
 			virtual ~State();
-
-			bool isDebug() const;
 
 			Strong<Array<types::LuaType>> loadFile(
 				const String& filename,
@@ -313,8 +310,6 @@ namespace fart::lua {
 				lua_State* l,
 				lua_Debug* ar
 			);
-
-			bool _isDebug;
 
 			lua_State* _l;
 			Data<StackItem*> _stack;
