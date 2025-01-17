@@ -45,8 +45,6 @@ else()
 	target_link_libraries(fart-lua lua_static)
 endif()
 
-add_definitions(-DFART_NO_IO -DFART_NO_SOCKET)
-
 target_compile_features(fart-lua PRIVATE cxx_std_17)
 
 set(ARCH_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE}/${CMAKE_SYSTEM_PROCESSOR}")
