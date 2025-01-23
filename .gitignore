@@ -13,3 +13,4 @@ build.ninja
 .build/
 .swiftpm/
 libfoundation-lua.a
+Package.resolved
