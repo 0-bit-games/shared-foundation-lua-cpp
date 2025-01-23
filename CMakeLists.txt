@@ -51,7 +51,7 @@ endif()
 
 target_compile_features(foundation-lua PRIVATE cxx_std_17)
 
-set(ARCH_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE}/${CMAKE_SYSTEM_PROCESSOR}")
+set(ARCH_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.build/${CMAKE_BUILD_TYPE}/${CMAKE_SYSTEM_PROCESSOR}")
 
 set_target_properties(foundation-lua
 	PROPERTIES
