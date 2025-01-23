@@ -1,19 +1,19 @@
 //
 // compiler-exception.hpp
-// fart-lua
+// foundation-lua
 //
 // Created by Kristian Trenskow on 2023/11/14
 // See license in LICENSE.
 //
 
-#ifndef fart_lua_compiler_exception_hpp
-#define fart_lua_compiler_exception_hpp
+#ifndef foundation_lua_compiler_exception_hpp
+#define foundation_lua_compiler_exception_hpp
 
-#include "../fart/fart.hpp"
+#include "../foundation/src/foundation.hpp"
 
-namespace fart::lua::exceptions {
+namespace foundation::lua::exceptions {
 
-	class CompilerException : public fart::exceptions::Exception {
+	class CompilerException : public foundation::exceptions::Exception {
 
 		public:
 
@@ -34,4 +34,4 @@ namespace fart::lua::exceptions {
 
 }
 
-#endif /* fart_lua_compiler_exception_hpp */
+#endif /* foundation_lua_compiler_exception_hpp */

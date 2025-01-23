@@ -1,18 +1,18 @@
-fart-lua
+foundation-lua
 ----
 
-A small library for interfacing Lua code using [fart](https://github.com/trenskow/fart/).
+A small library for interfacing Lua code using [foundation](https://github.com/trenskow/foundation/).
 
 # Introduction
 
-This library is a bridging library for interfacing between fart code and Lua code. It is designed to be easy to use and all stack operations are abstracted away.
+This library is a bridging library for interfacing between foundation code and Lua code. It is designed to be easy to use and all stack operations are abstracted away.
 
 ## Example
 
 Below is an example on how to make a simple "Hello, World!" program, where the code interfaces both Lua from C++ and C++ from Lua.
 
 ```c++
-#include <fart-lua.hpp>
+#include <foundation-lua.hpp>
 
 int main() {
 

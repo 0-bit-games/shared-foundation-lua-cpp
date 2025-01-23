@@ -1,6 +1,6 @@
 //
 // user-function.hpp
-// fart-lua
+// foundation-lua
 //
 // Created by Kristian Trenskow on 2023/11/21
 // See license in LICENSE.
@@ -10,8 +10,8 @@
 
 #include "./user-function.hpp"
 
-using namespace fart::lua::types;
-using namespace fart::lua::exceptions;
+using namespace foundation::lua::types;
+using namespace foundation::lua::exceptions;
 
 LuaUserFunction::~LuaUserFunction() { }
 
@@ -19,7 +19,7 @@ int LuaUserFunction::callback(
 	lua_State* L
 ) {
 
-	fart::lua::State* state = *((State**)lua_getextraspace(L));
+	foundation::lua::State* state = *((State**)lua_getextraspace(L));
 
 	UserFunctionCallback callback = (UserFunctionCallback)lua_touserdata(L, lua_upvalueindex(1));
 	void* context = lua_touserdata(L, lua_upvalueindex(2));

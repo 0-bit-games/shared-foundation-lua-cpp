@@ -1,17 +1,17 @@
 //
 // string.hpp
-// fart-lua
+// foundation-lua
 //
 // Created by Kristian Trenskow on 2023/11/09
 // See license in LICENSE.
 //
 
-#ifndef fart_lua_string_hpp
-#define fart_lua_string_hpp
+#ifndef foundation_lua_string_hpp
+#define foundation_lua_string_hpp
 
 #include "./type.hpp"
 
-namespace fart::lua::types {
+namespace foundation::lua::types {
 
 	class LuaString : public LuaType {
 
@@ -35,4 +35,4 @@ namespace fart::lua::types {
 
 }
 
-#endif /* fart_lua_string_hpp */
+#endif /* foundation_lua_string_hpp */

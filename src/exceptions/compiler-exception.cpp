@@ -1,6 +1,6 @@
 //
 // compiler-exception.cpp
-// fart-lua
+// foundation-lua
 //
 // Created by Kristian Trenskow on 2023/11/14
 // See license in LICENSE.
@@ -10,7 +10,7 @@
 
 #include "./compiler-exception.hpp"
 
-using namespace fart::lua::exceptions;
+using namespace foundation::lua::exceptions;
 
 CompilerException::CompilerException() :
 	_message(nullptr) { }

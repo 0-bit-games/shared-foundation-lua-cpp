@@ -1,6 +1,6 @@
 //
 // unexpected-type-exception.cpp
-// fart-lua
+// foundation-lua
 //
 // Created by Kristian Trenskow on 2023/11/09
 // See license in LICENSE.
@@ -8,8 +8,8 @@
 
 #include "./unexpected-type-exception.hpp"
 
-using namespace fart::lua::exceptions;
-using namespace fart::lua::types;
+using namespace foundation::lua::exceptions;
+using namespace foundation::lua::types;
 
 UnexpectedTypeException::UnexpectedTypeException(
 	LuaType::Kind expectedKind,

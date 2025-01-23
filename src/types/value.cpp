@@ -1,6 +1,6 @@
 //
 // value.hpp
-// fart-lua
+// foundation-lua
 //
 // Created by Kristian Trenskow on 2023/11/21
 // See license in LICENSE.
@@ -8,7 +8,7 @@
 
 #include "./value.hpp"
 
-using namespace fart::lua::types;
+using namespace foundation::lua::types;
 
 LuaValue::~LuaValue() { }
 

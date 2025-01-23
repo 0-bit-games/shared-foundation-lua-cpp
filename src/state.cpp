@@ -1,6 +1,6 @@
 //
 // state.cpp
-// fart-lua
+// foundation-lua
 //
 // Created by Kristian Trenskow on 2023/11/08
 // See license in LICENSE.
@@ -16,10 +16,10 @@
 
 #include "./state.hpp"
 
-using namespace fart::lua;
-using namespace fart::lua::types;
-using namespace fart::lua::exceptions;
-using namespace fart::tools;
+using namespace foundation::lua;
+using namespace foundation::lua::types;
+using namespace foundation::lua::exceptions;
+using namespace foundation::tools;
 
 State::State(
 	Libraries libraries
@@ -79,9 +79,9 @@ State::State(
 }
 
 State::~State() {
-#ifdef FART_LUA_STACK_DEBUG
+#ifdef FOUNDATION_LUA_STACK_DEBUG
 	this->printStack("Close");
-#endif /* FART_LUA_STACK_DEBUG */
+#endif /* FOUNDATION_LUA_STACK_DEBUG */
 	lua_close(*this);
 }
 
@@ -245,7 +245,7 @@ Strong<LuaLightUserData> State::lightUserData(
 	return this->_pushStackItem<LuaLightUserData>();
 }
 
-Strong<LuaType> State::fart(
+Strong<LuaType> State::foundation(
 	const Type& value
 ) noexcept(false) {
 	switch (value.kind()) {
@@ -287,7 +287,7 @@ Strong<LuaType> State::fart(
 	throw NotSupportedException();
 }
 
-#ifdef FART_LUA_STACK_DEBUG
+#ifdef FOUNDATION_LUA_STACK_DEBUG
 
 void State::printStack(
 	const String& header
@@ -298,7 +298,7 @@ void State::printStack(
 	});
 
 	Array<Array<String>> columns = {
-		Array<String>({ "fart" }).appendingAll(this->_fartStackDescriptions()),
+		Array<String>({ "foundation" }).appendingAll(this->_foundationStackDescriptions()),
 		Array<String>({ "lua" }).appendingAll(this->_luaStackDescriptions())
 	};
 
@@ -346,11 +346,11 @@ void State::printStack(
 
 }
 
-#endif /* FART_LUA_STACK_DEBUG */
+#endif /* FOUNDATION_LUA_STACK_DEBUG */
 
-#ifdef FART_LUA_STACK_DEBUG
+#ifdef FOUNDATION_LUA_STACK_DEBUG
 
-Array<String> State::_fartStackDescriptions() const {
+Array<String> State::_foundationStackDescriptions() const {
 
 	Array<String> descriptions;
 
@@ -410,7 +410,7 @@ Array<String> State::_luaStackDescriptions() const {
 
 }
 
-#endif /* FART_LUA_STACK_DEBUG */
+#endif /* FOUNDATION_LUA_STACK_DEBUG */
 
 void State::_updateRootStackPointer() {
 	this->_stackPointers.replace(
@@ -455,9 +455,9 @@ void State::_popStackItem(
 
 	this->_updateRootStackPointer();
 
-#ifdef FART_LUA_STACK_DEBUG
+#ifdef FOUNDATION_LUA_STACK_DEBUG
 	this->printStack("Pop Stack Item");
-#endif /* FART_LUA_STACK_DEBUG */
+#endif /* FOUNDATION_LUA_STACK_DEBUG */
 
 }
 
@@ -495,7 +495,7 @@ Strong<Array<LuaType>> State::_load(
 
 		Strong<Type> error = LuaType::_pick(
 			*this)
-			->fart(true);
+			->foundation(true);
 
 		if (error != nullptr && error->kind() == Type::Kind::string) {
 			error

@@ -12,4 +12,4 @@ build.ninja
 .DS_Store
 .build/
 .swiftpm/
-libfart-lua.a
+libfoundation-lua.a

@@ -1,19 +1,19 @@
 //
 // type.hpp
-// fart-lua
+// foundation-lua
 //
 // Created by Kristian Trenskow on 2023/11/09
 // See license in LICENSE.
 //
 
-#ifndef fart_lua_type_hpp
-#define fart_lua_type_hpp
+#ifndef foundation_lua_type_hpp
+#define foundation_lua_type_hpp
 
-#include "../fart/fart.hpp"
+#include "../foundation/src/foundation.hpp"
 
 #include "../state.hpp"
 
-namespace fart::lua::types {
+namespace foundation::lua::types {
 
 	class LuaBoolean;
 	class LuaNumber;
@@ -28,7 +28,7 @@ namespace fart::lua::types {
 	class LuaType : public Object {
 
 		friend class Strong<LuaType>;
-		friend class fart::lua::State;
+		friend class foundation::lua::State;
 		friend class Caller;
 		friend class LuaTable;
 		friend class LuaUserFunction;
@@ -56,7 +56,7 @@ namespace fart::lua::types {
 			virtual Kind kind() const;
 			virtual String kindDescription() const;
 
-			virtual Strong<Type> fart(
+			virtual Strong<Type> foundation(
 				bool trueNull = true
 			) const noexcept(false);
 
@@ -108,4 +108,4 @@ namespace fart::lua::types {
 
 }
 
-#endif /* fart_lua_type_hpp */
+#endif /* foundation_lua_type_hpp */

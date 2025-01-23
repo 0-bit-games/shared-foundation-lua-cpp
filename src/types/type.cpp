@@ -1,6 +1,6 @@
 //
 // type.cpp
-// fart-lua
+// foundation-lua
 //
 // Created by Kristian Trenskow on 2023/11/09
 // See license in LICENSE.
@@ -19,8 +19,8 @@
 #include "./table.hpp"
 #include "./value.hpp"
 
-using namespace fart::lua::types;
-using namespace fart::lua::exceptions;
+using namespace foundation::lua::types;
+using namespace foundation::lua::exceptions;
 
 template<typename T>
 Strong<T> _to(const LuaType* value, LuaType::Kind kind) noexcept(false) {
@@ -57,7 +57,7 @@ String LuaType::kindDescription() const {
 	throw NotSupportedException();
 }
 
-Strong<Type> LuaType::fart(
+Strong<Type> LuaType::foundation(
 	bool trueNull
 ) const noexcept(false) {
 	switch (this->kind()) {

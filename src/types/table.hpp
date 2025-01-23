@@ -1,20 +1,20 @@
 //
 // table.hpp
-// fart-lua
+// foundation-lua
 //
 // Created by Kristian Trenskow on 2023/11/10
 // See license in LICENSE.
 //
 
-#ifndef lua_fart_table_hpp
-#define lua_fart_table_hpp
+#ifndef lua_FOUNDATION_table_hpp
+#define lua_FOUNDATION_table_hpp
 
 #include "./string.hpp"
 #include "./number.hpp"
 
 #include "./type.hpp"
 
-namespace fart::lua::types {
+namespace foundation::lua::types {
 
 	class LuaTable : public LuaType {
 
@@ -96,4 +96,4 @@ namespace fart::lua::types {
 
 }
 
-#endif /* lua_fart_table_hpp */
+#endif /* lua_FOUNDATION_table_hpp */

@@ -1,22 +1,22 @@
 //
 // value.hpp
-// fart-lua
+// foundation-lua
 //
 // Created by Kristian Trenskow on 2023/11/21
 // See license in LICENSE.
 //
 
-#ifndef fart_lua_value_hpp
-#define fart_lua_value_hpp
+#ifndef foundation_lua_value_hpp
+#define foundation_lua_value_hpp
 
 #include "./type.hpp"
 
-namespace fart::lua::types {
+namespace foundation::lua::types {
 
 	class LuaValue : public LuaType {
 
 		friend class Strong<LuaValue>;
-		friend class fart::lua::State;
+		friend class foundation::lua::State;
 
 		public:
 
@@ -38,4 +38,4 @@ namespace fart::lua::types {
 
 }
 
-#endif /* fart_lua_value_hpp */
+#endif /* foundation_lua_value_hpp */

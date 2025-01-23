@@ -1,13 +1,13 @@
 //
 // exceptions.hpp
-// fart-lua
+// foundation-lua
 //
 // Created by Kristian Trenskow on 2023/11/09
 // See license in LICENSE.
 //
 
-#ifndef fart_lua_exceptions_hpp
-#define fart_lua_exceptions_hpp
+#ifndef foundation_lua_exceptions_hpp
+#define foundation_lua_exceptions_hpp
 
 #include "./compiler-exception.hpp"
 #include "./runtime-exception.hpp"

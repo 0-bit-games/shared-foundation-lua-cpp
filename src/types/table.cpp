@@ -1,6 +1,6 @@
 //
 // table.hpp
-// fart-lua
+// foundation-lua
 //
 // Created by Kristian Trenskow on 2023/11/10
 // See license in LICENSE.
@@ -15,8 +15,8 @@
 
 #include "./table.hpp"
 
-using namespace fart::lua::types;
-using namespace fart::lua::exceptions;
+using namespace foundation::lua::types;
+using namespace foundation::lua::exceptions;
 
 LuaTable::~LuaTable() { }
 
@@ -30,8 +30,8 @@ Strong<Type> LuaTable::value() noexcept(false) {
 	this->forEach(
 		[&](LuaType& key, LuaType& value) {
 			result->set(
-				key.fart(),
-				value.fart());
+				key.foundation(),
+				value.foundation());
 		});
 
 	if (result->keys()->every([](const Type& key, size_t idx) {
@@ -83,7 +83,7 @@ void LuaTable::set(
 ) noexcept(false) {
 	this->set(
 		this->state().string(key),
-		this->state().fart(value));
+		this->state().foundation(value));
 }
 
 void LuaTable::set(
@@ -99,7 +99,7 @@ void LuaTable::set(
 ) noexcept(false) {
 	this->set(
 		this->state().number(key),
-		this->state().fart(value));
+		this->state().foundation(value));
 }
 
 void LuaTable::rawSet(

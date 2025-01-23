@@ -1,6 +1,6 @@
 //
 // string.cpp
-// fart-lua
+// foundation-lua
 //
 // Created by Kristian Trenskow on 2023/11/09
 // See license in LICENSE.
@@ -12,7 +12,7 @@
 
 #include "./string.hpp"
 
-using namespace fart::lua::types;
+using namespace foundation::lua::types;
 
 LuaString::~LuaString() { }
 

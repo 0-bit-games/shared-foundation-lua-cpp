@@ -1,19 +1,19 @@
 //
 // light-user-data.hpp
-// fart-lua
+// foundation-lua
 //
 // Created by Kristian Trenskow on 2023/11/09
 // See license in LICENSE.
 //
 
-#ifndef fart_lua_light_user_data_hpp
-#define fart_lua_light_user_data_hpp
+#ifndef foundation_lua_light_user_data_hpp
+#define foundation_lua_light_user_data_hpp
 
 #include "../state.hpp"
 
 #include "./type.hpp"
 
-namespace fart::lua::types {
+namespace foundation::lua::types {
 
 	class LuaLightUserData : public LuaType {
 
@@ -37,4 +37,4 @@ namespace fart::lua::types {
 
 }
 
-#endif /* fart_lua_light_user_data_hpp */
+#endif /* foundation_lua_light_user_data_hpp */

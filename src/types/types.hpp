@@ -1,13 +1,13 @@
 //
 // types.hpp
-// fart-lua
+// foundation-lua
 //
 // Created by Kristian Trenskow on 2023/11/09
 // See license in LICENSE.
 //
 
-#ifndef fart_lua_types_hpp
-#define fart_lua_types_hpp
+#ifndef foundation_lua_types_hpp
+#define foundation_lua_types_hpp
 
 #include "./type.hpp"
 #include "./boolean.hpp"
@@ -18,4 +18,4 @@
 #include "./light-user-data.hpp"
 #include "./user-function.hpp"
 
-#endif /* fart_lua_types_hpp */
+#endif /* foundation_lua_types_hpp */

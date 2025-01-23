@@ -1,17 +1,17 @@
 //
 // number.hpp
-// fart-lua
+// foundation-lua
 //
 // Created by Kristian Trenskow on 2023/11/09
 // See license in LICENSE.
 //
 
-#ifndef fart_lua_number_hpp
-#define fart_lua_number_hpp
+#ifndef foundation_lua_number_hpp
+#define foundation_lua_number_hpp
 
 #include "./type.hpp"
 
-namespace fart::lua::types {
+namespace foundation::lua::types {
 
 	class LuaNumber : public LuaType {
 
@@ -37,4 +37,4 @@ namespace fart::lua::types {
 
 }
 
-#endif /* fart_lua_number_hpp */
+#endif /* foundation_lua_number_hpp */

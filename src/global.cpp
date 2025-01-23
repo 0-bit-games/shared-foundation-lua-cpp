@@ -1,6 +1,6 @@
 //
 // global.cpp
-// fart-lua
+// foundation-lua
 //
 // Created by Kristian Trenskow on 2023/11/11
 // See license in LICENSE.
@@ -10,7 +10,7 @@
 
 #include "./global.hpp"
 
-using namespace fart::lua;
+using namespace foundation::lua;
 
 Global::~Global() { }
 

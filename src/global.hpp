@@ -1,6 +1,6 @@
 //
 // global.hpp
-// fart-lua
+// foundation-lua
 //
 // Created by Kristian Trenskow on 2023/11/11
 // See license in LICENSE.
@@ -8,7 +8,7 @@
 
 #include "./types/table.hpp"
 
-namespace fart::lua {
+namespace foundation::lua {
 
 	class Global : public types::LuaTable {
 

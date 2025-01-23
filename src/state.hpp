@@ -1,20 +1,20 @@
 //
 // state.hpp
-// fart-lua
+// foundation-lua
 //
 // Created by Kristian Trenskow on 2023/11/08
 // See license in LICENSE.
 //
 
-#ifndef fart_lua_state_hpp
-#define fart_lua_state_hpp
+#ifndef foundation_lua_state_hpp
+#define foundation_lua_state_hpp
 
 #include <time.h>
 
 #include "./lua/lua-5.4.7/include/lua.hpp"
-#include "./fart/fart.hpp"
+#include "./foundation/src/foundation.hpp"
 
-namespace fart::lua {
+namespace foundation::lua {
 
 	namespace types {
 		class LuaType;
@@ -119,7 +119,7 @@ namespace fart::lua {
 			Strong<types::LuaLightUserData> lightUserData(
 				void* value);
 
-			Strong<types::LuaType> fart(
+			Strong<types::LuaType> foundation(
 				const Type& value
 			) noexcept(false);
 
@@ -127,11 +127,11 @@ namespace fart::lua {
 				return this->_l;
 			}
 
-#ifdef FART_LUA_STACK_DEBUG
+#ifdef FOUNDATION_LUA_STACK_DEBUG
 			void printStack(
 				const String& header
 			) const;
-#endif /* FART_LUA_STACK_DEBUG */
+#endif /* FOUNDATION_LUA_STACK_DEBUG */
 
 		private:
 
@@ -145,10 +145,10 @@ namespace fart::lua {
 				double timeout;
 			};
 
-#ifdef FART_LUA_STACK_DEBUG
-			Array<String> _fartStackDescriptions() const;
+#ifdef FOUNDATION_LUA_STACK_DEBUG
+			Array<String> _foundationStackDescriptions() const;
 			Array<String> _luaStackDescriptions() const;
-#endif /* FART_LUA_STACK_DEBUG */
+#endif /* FOUNDATION_LUA_STACK_DEBUG */
 
 			void _updateRootStackPointer();
 
@@ -170,9 +170,9 @@ namespace fart::lua {
 
 				this->_updateRootStackPointer();
 
-			#ifdef FART_LUA_STACK_DEBUG
+			#ifdef FOUNDATION_LUA_STACK_DEBUG
 				this->printStack("Push Stack Item");
-			#endif /* FART_LUA_STACK_DEBUG */
+			#endif /* FOUNDATION_LUA_STACK_DEBUG */
 
 				return value;
 
@@ -262,9 +262,9 @@ namespace fart::lua {
 
 						this->state._updateRootStackPointer();
 
-						#ifdef FART_LUA_STACK_DEBUG
+						#ifdef FOUNDATION_LUA_STACK_DEBUG
 							this->state.printStack("Autopop");
-						#endif /* FART_LUA_STACK_DEBUG */
+						#endif /* FOUNDATION_LUA_STACK_DEBUG */
 
 					}
 
@@ -329,4 +329,4 @@ namespace fart::lua {
 
 }
 
-#endif /* fart_lua_state_hpp */
+#endif /* foundation_lua_state_hpp */

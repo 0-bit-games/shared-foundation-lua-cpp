@@ -1,6 +1,6 @@
 //
 // caller.cpp
-// fart-lua
+// foundation-lua
 //
 // Created by Kristian Trenskow on 2023/11/10
 // See license in LICENSE.
@@ -13,8 +13,8 @@
 
 #include "./caller.hpp"
 
-using namespace fart::lua::types;
-using namespace fart::lua::exceptions;
+using namespace foundation::lua::types;
+using namespace foundation::lua::exceptions;
 
 Caller& Caller::argument(
 	LuaBoolean& value
@@ -69,7 +69,7 @@ Caller& Caller::argument(
 	const Type& value
 ) {
 	this->_arguments.append(
-		this->_function.state().fart(value));
+		this->_function.state().foundation(value));
 	return *this;
 }
 

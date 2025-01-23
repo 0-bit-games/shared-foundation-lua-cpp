@@ -1,20 +1,20 @@
 //
 // function.hpp
-// fart-lua
+// foundation-lua
 //
 // Created by Kristian Trenskow on 2023/11/09
 // See license in LICENSE.
 //
 
-#ifndef fart_lua_function_hpp
-#define fart_lua_function_hpp
+#ifndef foundation_lua_function_hpp
+#define foundation_lua_function_hpp
 
 #include "../state.hpp"
 #include "./caller.hpp"
 
 #include "./type.hpp"
 
-namespace fart::lua::types {
+namespace foundation::lua::types {
 
 	class LuaFunction : public LuaType {
 
@@ -39,4 +39,4 @@ namespace fart::lua::types {
 
 }
 
-#endif /* fart_lua_function_hpp */
+#endif /* foundation_lua_function_hpp */
