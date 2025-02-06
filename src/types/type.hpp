@@ -56,7 +56,7 @@ namespace foundation::lua::types {
 			virtual Kind kind() const;
 			virtual String kindDescription() const;
 
-			virtual Strong<Type> foundation(
+			Strong<Type> foundation(
 				bool trueNull = true
 			) const noexcept(false);
 
@@ -92,7 +92,15 @@ namespace foundation::lua::types {
 
 			Strong<LuaType> replaced();
 
+			bool rawEquals(
+				const LuaType& other);
+
 		private:
+
+			Strong<Type> _foundation(
+				bool trueNull,
+				Array<Pair<LuaType, Type>>& crossReferences
+			) const noexcept(false);
 
 			static Strong<LuaType> _pick(
 				State& state,

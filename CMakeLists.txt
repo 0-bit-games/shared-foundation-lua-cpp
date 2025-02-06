@@ -12,6 +12,7 @@ endif()
 
 add_library(foundation-lua ${LIBRARY_BUILD_TYPE}
 	src/exceptions/compiler-exception.cpp
+	src/exceptions/exhausted-stack-exception.cpp
 	src/exceptions/not-supported-exception.cpp
 	src/exceptions/runtime-exception.cpp
 	src/exceptions/unexpected-type-exception.cpp

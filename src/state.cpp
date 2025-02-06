@@ -127,29 +127,48 @@ void State::setGlobal(
 }
 
 Strong<LuaType> State::nil() {
-	lua_pushnil(*this);
+
+	this->_ensureStackSpace([&](State& state) {
+		lua_pushnil(state);
+	});
+
 	return this->_pushStackItem<LuaType>();
 }
 
 Strong<LuaBoolean> State::boolean(
 	bool value
 ) {
-	lua_pushboolean(*this, value);
+
+	this->_ensureStackSpace([&](State& state) {
+		lua_pushboolean(state, value);
+	});
+
 	return this->_pushStackItem<LuaBoolean>();
+
 }
 
 Strong<LuaNumber> State::number(
 	double value
 ) {
-	lua_pushnumber(*this, value);
+
+	this->_ensureStackSpace([&](State& state) {
+		lua_pushnumber(state, value);
+	});
+
 	return this->_pushStackItem<LuaNumber>();
+
 }
 
 Strong<LuaNumber> State::number(
 	int64_t value
 ) {
-	lua_pushinteger(*this, value);
+
+	this->_ensureStackSpace([&](State& state) {
+		lua_pushinteger(state, value);
+	});
+
 	return this->_pushStackItem<LuaNumber>();
+
 }
 
 Strong<LuaString> State::string(
@@ -157,7 +176,11 @@ Strong<LuaString> State::string(
 ) {
 	return value
 		.mapCString<Strong<LuaString>>([&](const char* value) {
-			lua_pushstring(*this, value);
+
+			this->_ensureStackSpace([&](State& state) {
+				lua_pushstring(state, value);
+			});
+
 			return this->_pushStackItem<LuaString>();
 		});
 }
@@ -176,7 +199,9 @@ Strong<LuaUserFunction> State::function(
 			autoPop(callbackUserData->push());
 			autoPop(contextUserData->push());
 
-			lua_pushcclosure(*this, LuaUserFunction::callback, 2);
+			this->_ensureStackSpace([&](State& state) {
+				lua_pushcclosure(state, LuaUserFunction::callback, 2);
+			});
 
 		});
 
@@ -193,34 +218,11 @@ Strong<LuaTable> State::table(
 	const Dictionary<Type>& value
 ) noexcept(false) {
 
-	auto table = this->table();
+	Array<Pair<LuaType, Type>> crossReferences;
 
-	value.keys()
-		->forEach([&](const Type& key) {
-			switch (key.kind()) {
-				case Type::Kind::string:
-					table->set(
-						key.as<String>(),
-						value[key]);
-					return;
-				case Type::Kind::number:
-					switch (key.as<Numeric>().subType()) {
-						case Numeric::Subtype::integer:
-							table->set(
-								key.as<Integer>().value(),
-								value[key]);
-							return;
-						default:
-							break;
-					}
-					break;
-				default:
-					break;
-			}
-			throw NotSupportedException();
-		});
-
-	return table;
+	return this->_table(
+		value,
+		crossReferences);
 
 }
 
@@ -228,63 +230,36 @@ Strong<LuaTable> State::table(
 	const Array<>& value
 ) noexcept(false) {
 
-	auto table = this->table();
+	Array<Pair<LuaType, Type>> crossReferences;
 
-	value.forEach([&](const Type& value, size_t idx) {
-		table->set(idx + 1, value);
-	});
-
-	return table;
+	return this->_table(
+		value,
+		crossReferences);
 
 }
 
 Strong<LuaLightUserData> State::lightUserData(
 	void* value
 ) {
-	lua_pushlightuserdata(*this, value);
+
+	this->_ensureStackSpace([&](State& state) {
+		lua_pushlightuserdata(state, value);
+	});
+
 	return this->_pushStackItem<LuaLightUserData>();
+
 }
 
 Strong<LuaType> State::foundation(
 	const Type& value
 ) noexcept(false) {
-	switch (value.kind()) {
-		case Type::Kind::null:
-			return this->nil();
-		case Type::Kind::number:
-			switch (value.as<Numeric>().subType()) {
-				case Numeric::Subtype::boolean:
-					return this->boolean(
-						value.as<Boolean>().value())
-						.as<LuaType>();
-				case Numeric::Subtype::floatingPoint:
-					return this->number(
-						value.as<Float>().value())
-						.as<LuaType>();
-				case Numeric::Subtype::integer:
-					return this->number(
-						value.as<Integer>().value())
-						.as<LuaType>();
-				default:
-					break;
-			}
-			break;
-		case Type::Kind::string:
-			return this->string(
-					value.as<String>())
-				.as<LuaType>();
-		case Type::Kind::dictionary:
-			return this->table(
-				value.as<Dictionary<Type>>())
-				.as<LuaType>();
-		case Type::Kind::array:
-			return this->table(
-				value.as<Array<>>())
-				.as<LuaType>();
-		default:
-			break;
-	}
-	throw NotSupportedException();
+
+	Array<Pair<LuaType, Type>> crossReferences;
+
+	return this->_foundation(
+		value,
+		crossReferences);
+
 }
 
 #ifdef FOUNDATION_LUA_STACK_DEBUG
@@ -411,6 +386,153 @@ Array<String> State::_luaStackDescriptions() const {
 }
 
 #endif /* FOUNDATION_LUA_STACK_DEBUG */
+
+bool State::_canPush() {
+	return lua_checkstack(*this, 1);
+}
+
+void State::_ensureStackSpace(
+	const ::function<void(State&)>& action
+) noexcept(false) {
+
+	if (!this->_canPush()) {
+		throw ExhaustedStackException();
+	}
+
+	action(*this);
+
+}
+
+Strong<LuaType> State::_foundation(
+	const Type& value,
+	Array<Pair<LuaType, Type>>& crossReferences
+) noexcept(false) {
+
+	switch (value.kind()) {
+		case Type::Kind::null:
+			return this->nil();
+		case Type::Kind::number:
+			switch (value.as<Numeric>().subType()) {
+				case Numeric::Subtype::boolean:
+					return this->boolean(
+						value.as<Boolean>().value())
+						.as<LuaType>();
+				case Numeric::Subtype::floatingPoint:
+					return this->number(
+						value.as<Float>().value())
+						.as<LuaType>();
+				case Numeric::Subtype::integer:
+					return this->number(
+						value.as<Integer>().value())
+						.as<LuaType>();
+				default:
+					break;
+			}
+			break;
+		case Type::Kind::string:
+			return this->string(
+					value.as<String>())
+				.as<LuaType>();
+		case Type::Kind::dictionary:
+			return this->_table(
+				value.as<Dictionary<Type>>(),
+				crossReferences)
+				.as<LuaType>();
+		case Type::Kind::array:
+			return this->_table(
+				value.as<Array<>>(),
+				crossReferences)
+				.as<LuaType>();
+		default:
+			break;
+	}
+	throw NotSupportedException();
+
+}
+
+Strong<LuaTable> State::_table(
+	const Dictionary<Type>& value,
+	Array<Pair<LuaType, Type>>& crossReferences
+) noexcept(false) {
+
+	for (size_t idx = 0 ; idx < crossReferences.count() ; idx++) {
+		if (&crossReferences[idx]->second() == &value) {
+			return Strong<LuaType>(crossReferences[idx]->first())
+				.as<LuaTable>();
+		}
+	}
+
+	auto table = this->table();
+
+	Array<Pair<LuaType, Type>> crossReferencesNested = crossReferences
+		.appending(
+			Strong<Pair<LuaType, Type>>(
+				table,
+				Strong<Dictionary<Type>>(value)
+					.as<Type>()));
+
+	value.keys()
+		->forEach([&](const Type& key) {
+			switch (key.kind()) {
+				case Type::Kind::string:
+					table->_set(
+						key.as<String>(),
+						value[key],
+						crossReferencesNested);
+					return;
+				case Type::Kind::number:
+					switch (key.as<Numeric>().subType()) {
+						case Numeric::Subtype::integer:
+							table->_set(
+								key.as<Integer>().value(),
+								value[key],
+								crossReferencesNested);
+							return;
+						default:
+							break;
+					}
+					break;
+				default:
+					break;
+			}
+			throw NotSupportedException();
+		});
+
+	return table;
+
+}
+
+Strong<LuaTable> State::_table(
+	const Array<>& value,
+	Array<Pair<types::LuaType, Type>>& crossReferences
+) noexcept(false) {
+
+	for (size_t idx = 0 ; idx < crossReferences.count() ; idx++) {
+		if (&crossReferences[idx]->second() == &value) {
+			return Strong<LuaType>(crossReferences[idx]->first())
+				.as<LuaTable>();
+		}
+	}
+
+	auto table = this->table();
+
+	Array<Pair<LuaType, Type>> crossReferencesNested = crossReferences
+		.appending(
+			Strong<Pair<LuaType, Type>>(
+				table,
+				Strong<Array<Type>>(value)
+					.as<Type>()));
+
+	value.forEach([&](const Type& value, size_t idx) {
+		table->_set(
+			idx + 1,
+			value,
+			crossReferencesNested);
+	});
+
+	return table;
+
+}
 
 void State::_updateRootStackPointer() {
 	this->_stackPointers.replace(

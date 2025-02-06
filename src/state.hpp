@@ -150,6 +150,27 @@ namespace foundation::lua {
 			Array<String> _luaStackDescriptions() const;
 #endif /* FOUNDATION_LUA_STACK_DEBUG */
 
+			bool _canPush();
+
+			void _ensureStackSpace(
+				const ::function<void(State&)>& action
+			) noexcept(false);
+
+			Strong<types::LuaType> _foundation(
+				const Type& value,
+				Array<Pair<types::LuaType, Type>>& crossReferences
+			) noexcept(false);
+
+			Strong<types::LuaTable> _table(
+				const Dictionary<Type>& value,
+				Array<Pair<types::LuaType, Type>>& crossReferences
+			) noexcept(false);
+
+			Strong<types::LuaTable> _table(
+				const Array<>& value,
+				Array<Pair<types::LuaType, Type>>& crossReferences
+			) noexcept(false);
+
 			void _updateRootStackPointer();
 
 			template<typename T>

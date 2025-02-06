@@ -20,6 +20,7 @@ namespace foundation::lua::types {
 
 		friend class LuaType;
 		friend class Strong<LuaTable>;
+		friend class foundation::lua::State;
 
 		public:
 
@@ -83,6 +84,22 @@ namespace foundation::lua::types {
 
 			LuaTable(
 				State& state);
+
+			Strong<Type> _value(
+				Array<Pair<LuaType, Type>>& crossReferences
+			) noexcept(false);
+
+			void _set(
+				const String& key,
+				const Type& value,
+				Array<Pair<LuaType, Type>>& crossReferences
+			) noexcept(false);
+
+			void _set(
+				int64_t key,
+				const Type& value,
+				Array<Pair<LuaType, Type>>& crossReferences
+			) noexcept(false);
 
 			Strong<LuaType> _get(
 				LuaType& key

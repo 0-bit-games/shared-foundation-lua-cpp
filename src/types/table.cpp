@@ -25,22 +25,10 @@ LuaType::Kind LuaTable::kind() const {
 
 Strong<Type> LuaTable::value() noexcept(false) {
 
-	Strong<Dictionary<Type>> result;
+	Array<Pair<LuaType, Type>> crossReferences;
 
-	this->forEach(
-		[&](LuaType& key, LuaType& value) {
-			result->set(
-				key.foundation(),
-				value.foundation());
-		});
-
-	if (result->keys()->every([](const Type& key, size_t idx) {
-		return key.kind() == Type::Kind::number && Number<size_t>::getValue(key) == idx + 1;
-	})) return result->values()
-		.as<Type>();
-
-	return result
-		.as<Type>();
+	return this->_value(
+		crossReferences);
 
 }
 
@@ -81,9 +69,14 @@ void LuaTable::set(
 	const String& key,
 	const Type& value
 ) noexcept(false) {
-	this->set(
-		this->state().string(key),
-		this->state().foundation(value));
+
+	Array<Pair<LuaType, Type>> crossReference;
+
+	this->_set(
+		key,
+		value,
+		crossReference);
+
 }
 
 void LuaTable::set(
@@ -97,9 +90,14 @@ void LuaTable::set(
 	int64_t key,
 	const Type& value
 ) noexcept(false) {
-	this->set(
-		this->state().number(key),
-		this->state().foundation(value));
+
+	Array<Pair<LuaType, Type>> crossReference;
+
+	this->_set(
+		key,
+		value,
+		crossReference);
+
 }
 
 void LuaTable::rawSet(
@@ -114,7 +112,9 @@ void LuaTable::rawSet(
 				autoPop(key.push());
 				autoPop(value.push());
 
-				lua_rawset(this->state(), (int)this->stackIndex());
+				lua_rawset(
+					this->state(),
+					(int)this->stackIndex());
 
 			});
 
@@ -124,7 +124,9 @@ Strong<LuaTable> LuaTable::getMetaTable() {
 
 	auto table = this->push();
 
-	lua_getmetatable(this->state(), (int)table->stackIndex());
+	lua_getmetatable(
+		this->state(),
+		(int)table->stackIndex());
 
 	return LuaType::_pick(
 		this->state())
@@ -144,7 +146,9 @@ void LuaTable::setMetaTable(
 
 				autoPop(metaTable.push());
 
-				lua_setmetatable(this->state(), (int)table->stackIndex());
+				lua_setmetatable(
+					this->state(),
+					(int)table->stackIndex());
 
 			});
 
@@ -160,14 +164,18 @@ void LuaTable::resetMetaTable() {
 
 				autoPop(this->state().nil());
 
-				lua_setmetatable(this->state(), (int)table->stackIndex());
+				lua_setmetatable(
+					this->state(),
+					(int)table->stackIndex());
 
 			});
 
 }
 
 size_t LuaTable::count() {
-	return luaL_len(this->state(), (int)this->stackIndex());
+	return luaL_len(
+		this->state(),
+		(int)this->stackIndex());
 }
 
 void LuaTable::forEach(
@@ -207,6 +215,76 @@ LuaTable::LuaTable(
 ) : LuaType(
 		state) { }
 
+Strong<Type> LuaTable::_value(
+	Array<Pair<LuaType, Type>>& crossReferences
+) noexcept(false) {
+
+	for (size_t idx = 0 ; idx < crossReferences.count() ; idx++) {
+		if (crossReferences[idx]->first().rawEquals(*this)) {
+			return crossReferences[idx]->second()
+				.as<Type>();
+		}
+	}
+
+	Strong<Dictionary<Type>> result;
+
+	Array<Pair<LuaType, Type>> crossReferencesNested = crossReferences
+		.appending(
+			Strong<Pair<LuaType, Type>>(
+				*this,
+				result
+					.as<Type>()));
+
+	this->forEach(
+		[&](LuaType& key, LuaType& value) {
+			result->set(
+				key.foundation(),
+				value
+					._foundation(
+						false,
+						crossReferencesNested));
+		});
+
+	if (result->keys()->every([](const Type& key, size_t idx) {
+		return key.kind() == Type::Kind::number && Number<size_t>::getValue(key) == idx + 1;
+	})) return result->values()
+		.as<Type>();
+
+	return result
+		.as<Type>();
+
+}
+
+void LuaTable::_set(
+	const String& key,
+	const Type& value,
+	Array<Pair<LuaType, Type>>& crossReferences
+) noexcept(false) {
+
+	this->set(
+		this->state().string(key),
+		this->state()
+			._foundation(
+				value,
+				crossReferences));
+
+}
+
+void LuaTable::_set(
+	int64_t key,
+	const Type& value,
+	Array<Pair<LuaType, Type>>& crossReferences
+) noexcept(false) {
+
+	this->set(
+		this->state().number(key),
+		this->state()
+			._foundation(
+				value,
+				crossReferences));
+
+}
+
 Strong<LuaType> LuaTable::_get(
 	LuaType& key
 ) const {
@@ -217,7 +295,9 @@ Strong<LuaType> LuaTable::_get(
 
 				autoPop(key.push());
 
-				lua_gettable(this->state(), (int)this->stackIndex());
+				lua_gettable(
+					this->state(),
+					(int)this->stackIndex());
 
 			});
 
@@ -238,7 +318,9 @@ void LuaTable::_set(
 				autoPop(key.push());
 				autoPop(value.push());
 
-				lua_settable(this->state(), (int)this->stackIndex());
+				lua_settable(
+					this->state(),
+					(int)this->stackIndex());
 
 			});
 

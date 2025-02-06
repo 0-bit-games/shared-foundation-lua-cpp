@@ -57,26 +57,48 @@ int LuaUserFunction::callback(
 						});
 
 				} catch (const RuntimeException& exception) {
+
+					if (!state->_canPush()) {
+						return luaL_error(
+							*state,
+							"An error occurred in the user function, but the stack could not be expanded.");
+					}
+
 					exception.message()
 						.withCString([&](const char* message) {
 							lua_pushstring(
 								*state,
 								message);
 						});
+
 				} catch (const Exception& exception) {
+
+					if (!state->_canPush()) {
+						return luaL_error(
+							*state,
+							"An error occurred in the user function, but the stack could not be expanded.");
+					}
+
 					lua_pushstring(
 						*state,
 						exception.description());
+
 				} catch (...) {
+
+					if (!state->_canPush()) {
+						return luaL_error(
+							*state,
+							"An error occurred in the user function, but the stack could not be expanded.");
+					}
+
 					lua_pushstring(
 						*state,
 						"Unknown exception occurred.");
+
 				}
 
-				lua_error(
+				return lua_error(
 					*state);
-
-				return 0;
 
 			});
 

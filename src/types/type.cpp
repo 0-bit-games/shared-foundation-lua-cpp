@@ -60,31 +60,13 @@ String LuaType::kindDescription() const {
 Strong<Type> LuaType::foundation(
 	bool trueNull
 ) const noexcept(false) {
-	switch (this->kind()) {
-		case LuaType::Kind::nil:
-			if (trueNull) return nullptr;
-			return Strong<Null>()
-				.as<Type>();
-		case LuaType::Kind::boolean:
-			return Strong<Boolean>(
-				((LuaBoolean&)*this).value())
-				.as<Type>();
-		case LuaType::Kind::number:
-			return Strong<Float>(
-				((LuaNumber&)*this).value())
-				.as<Type>();
-		case LuaType::Kind::string:
-			return Strong<String>(
-				((LuaString&)*this).value())
-				.as<Type>();
-		case LuaType::Kind::table:
-			return Strong<Type>(
-				((LuaTable&)*this).value()
-				.as<Type>());
-		default:
-			break;
-	}
-	throw NotSupportedException();
+
+	Array<Pair<LuaType, Type>> crossReferences;
+
+	return this->_foundation(
+		trueNull,
+		crossReferences);
+
 }
 
 Strong<LuaBoolean> LuaType::boolean() const noexcept(false) {
@@ -145,10 +127,15 @@ Strong<LuaType> LuaType::underlying() const {
 }
 
 Strong<LuaType> LuaType::push() const {
-	lua_pushvalue(*this->_state, (int)this->stackIndex());
+
+	this->_state->_ensureStackSpace([&](State& state) {
+		lua_pushvalue(state, (int)this->stackIndex());
+	});
+
 	return this->_state->_pushStackItem<LuaValue>(
 		*this)
 		.as<LuaType>();
+
 }
 
 Strong<LuaType> LuaType::replaced() {
@@ -176,6 +163,50 @@ Strong<LuaType> LuaType::replaced() {
 		default:
 			throw NotSupportedException();
 	}
+}
+
+bool LuaType::rawEquals(
+	const LuaType& other
+) {
+	return lua_rawequal(
+		this->state(),
+		(int)this->stackIndex(),
+		(int)other.stackIndex());
+}
+
+Strong<Type> LuaType::_foundation(
+	bool trueNull,
+	Array<Pair<LuaType, Type>>& crossReferences
+) const noexcept(false) {
+
+	switch (this->kind()) {
+		case LuaType::Kind::nil:
+			if (trueNull) return nullptr;
+			return Strong<Null>()
+				.as<Type>();
+		case LuaType::Kind::boolean:
+			return Strong<Boolean>(
+				((LuaBoolean&)*this).value())
+				.as<Type>();
+		case LuaType::Kind::number:
+			return Strong<Float>(
+				((LuaNumber&)*this).value())
+				.as<Type>();
+		case LuaType::Kind::string:
+			return Strong<String>(
+				((LuaString&)*this).value())
+				.as<Type>();
+		case LuaType::Kind::table:
+			return Strong<Type>(
+				((LuaTable&)*this)._value(
+					crossReferences)
+				.as<Type>());
+		default:
+			break;
+	}
+
+	throw NotSupportedException();
+
 }
 
 Strong<LuaType> LuaType::_pick(
