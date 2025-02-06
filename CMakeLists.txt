@@ -50,7 +50,7 @@ else()
 	target_link_libraries(foundation-lua lua_static)
 endif()
 
-target_compile_features(foundation-lua PRIVATE cxx_std_17)
+target_compile_features(foundation-lua PRIVATE cxx_std_20)
 
 set(ARCH_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE}/${CMAKE_SYSTEM_PROCESSOR}")
 
