@@ -15,13 +15,13 @@ namespace foundation::lua::exceptions {
 
 	class ExhaustedStackException : public foundation::exceptions::Exception {
 
-	public:
+		public:
 
-		ExhaustedStackException();
-		virtual ~ExhaustedStackException();
+			ExhaustedStackException();
+			virtual ~ExhaustedStackException();
 
-		virtual const char* description() const override;
-		virtual Exception* clone() const override;
+			virtual const char* description() const override;
+			virtual Exception* clone() const override;
 
 	};
 
