@@ -619,7 +619,7 @@ Strong<Array<LuaType>> State::_load(
 			*this)
 			->foundation(true);
 
-		if (error != nullptr && error->kind() == Type::Kind::string) {
+		if (!error.equals(nullptr) && error->kind() == Type::Kind::string) {
 			error
 				.as<String>()
 					->withCString([](const char* error) {
