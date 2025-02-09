@@ -17,6 +17,7 @@ add_library(foundation-lua ${LIBRARY_BUILD_TYPE}
 	src/exceptions/runtime-exception.cpp
 	src/exceptions/unexpected-type-exception.cpp
 	src/global.cpp
+	src/stack-trace-entry.cpp
 	src/state.cpp
 	src/types/boolean.cpp
 	src/types/caller.cpp

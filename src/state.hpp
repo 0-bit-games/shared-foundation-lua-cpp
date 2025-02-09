@@ -11,6 +11,8 @@
 
 #include <time.h>
 
+#include "./stack-trace-entry.hpp"
+
 #include "./lua/lua-5.4.7/include/lua.hpp"
 #include "./foundation/src/foundation.hpp"
 
@@ -121,6 +123,10 @@ namespace foundation::lua {
 
 			Strong<types::LuaType> foundation(
 				const Type& value
+			) noexcept(false);
+
+			Array<StackTraceEntry> stackTrace(
+				uint64_t maxLevel = 10
 			) noexcept(false);
 
 			inline operator lua_State*() {

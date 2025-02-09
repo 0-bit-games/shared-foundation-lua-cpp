@@ -262,6 +262,28 @@ Strong<LuaType> State::foundation(
 
 }
 
+Array<StackTraceEntry> State::stackTrace(
+	uint64_t maxLevel
+) noexcept(false) {
+
+	Array<StackTraceEntry> stackTrace;
+
+	lua_Debug debug;
+
+	for (uint64_t level = 0 ; (maxLevel == 0 || maxLevel < level) && lua_getstack(*this, level, &debug) ; level++) {
+
+		lua_getinfo(*this, "nSlu", &debug);
+
+		stackTrace
+			.append(Strong<StackTraceEntry>(
+				debug));
+
+	}
+
+	return stackTrace;
+
+}
+
 #ifdef FOUNDATION_LUA_STACK_DEBUG
 
 void State::printStack(
