@@ -11,6 +11,8 @@
 
 #include <time.h>
 
+#include "./foundation/src/foundation.hpp"
+
 #include "./stack-trace-entry.hpp"
 
 #include "./lua/lua-5.4.7/include/lua.hpp"

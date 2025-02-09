@@ -9,6 +9,8 @@
 #ifndef foundation_lua_stack_trace_entry_hpp
 #define foundation_lua_stack_trace_entry_hpp
 
+#include "./foundation/src/foundation.hpp"
+
 #include "./lua/lua-5.4.7/include/lua.hpp"
 
 namespace foundation::lua {
