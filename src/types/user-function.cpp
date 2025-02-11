@@ -24,14 +24,15 @@ int LuaUserFunction::callback(
 	UserFunctionCallback callback = (UserFunctionCallback)lua_touserdata(L, lua_upvalueindex(1));
 	void* context = lua_touserdata(L, lua_upvalueindex(2));
 
-	return state
-		->_withStackPointer<int>(
-			0,
-			[&]() {
+	Strong<String> errorMessage = nullptr;
 
-				Array<LuaType> arguments;
+	try {
+		return state
+			->_withStackPointer<int>(
+				0,
+				[&]() {
 
-				try {
+					Array<LuaType> arguments;
 
 					while (state->_available() > 0) {
 						arguments.append(
@@ -56,51 +57,30 @@ int LuaUserFunction::callback(
 
 						});
 
-				} catch (const RuntimeException& exception) {
+				});
+	} catch (const RuntimeException& exception) {
+		errorMessage = exception.message();
+	} catch (const Exception& exception) {
+		errorMessage = Strong<String>(exception.description());
+	} catch (...) {
+		errorMessage = Strong<String>("An unknown error occurred.");
+	}
 
-					if (!state->_canPush()) {
-						return luaL_error(
-							*state,
-							"An error occurred in the user function, but the stack could not be expanded.");
-					}
+	if (!errorMessage.equals(nullptr)) {
 
-					exception.message()
-						.withCString([&](const char* message) {
-							lua_pushstring(
-								*state,
-								message);
-						});
-
-				} catch (const Exception& exception) {
-
-					if (!state->_canPush()) {
-						return luaL_error(
-							*state,
-							"An error occurred in the user function, but the stack could not be expanded.");
-					}
-
-					lua_pushstring(
-						*state,
-						exception.description());
-
-				} catch (...) {
-
-					if (!state->_canPush()) {
-						return luaL_error(
-							*state,
-							"An error occurred in the user function, but the stack could not be expanded.");
-					}
-
-					lua_pushstring(
-						*state,
-						"Unknown exception occurred.");
-
-				}
-
-				return lua_error(
-					*state);
-
+		errorMessage
+			->withCString([&](const char* message) {
+				lua_pushstring(L, message);
 			});
+
+		errorMessage = nullptr;
+
+		return lua_error(
+			*state);
+
+	}
+
+	return 0;
 
 }
 
