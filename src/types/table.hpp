@@ -75,10 +75,27 @@ namespace foundation::lua::types {
 
 			void resetMetaTable();
 
-			size_t count();
+			int64_t count();
 
 			void forEach(
-				std::function<void(LuaType& key, LuaType& value)> todo);
+				std::function<void(LuaType& key, LuaType& value)> todo
+			) noexcept(false);
+
+			template<typename T>
+			T reduce(
+				T initialValue,
+				std::function<T(T result, LuaType& key, LuaType& value)> todo
+			) noexcept(false) {
+
+				T result = initialValue;
+
+				this->forEach([&](LuaType& key, LuaType& value) {
+					result = todo(result, key, value);
+				});
+
+				return result;
+
+			}
 
 		protected:
 

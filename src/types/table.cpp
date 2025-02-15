@@ -172,20 +172,33 @@ void LuaTable::resetMetaTable() {
 
 }
 
-size_t LuaTable::count() {
-	return luaL_len(
+int64_t LuaTable::count() {
+
+	lua_len(
 		this->state(),
 		(int)this->stackIndex());
+
+	Strong<LuaType> result = LuaType::_pick(
+		this->state());
+
+	if (result->kind() != LuaType::Kind::number) {
+		return 0;
+	}
+
+	return result
+		.as<LuaNumber>()
+		->value();
+
 }
 
 void LuaTable::forEach(
 	std::function<void(LuaType& key, LuaType& value)> todo
-) {
+) noexcept(false) {
+
+	auto table = this->push();
 
 	Strong<LuaType> key = this->state().nil()
 		.as<LuaType>();
-
-	auto table = this->push();
 
 	this->_state
 		->_withAutoPopped(
@@ -197,7 +210,7 @@ void LuaTable::forEach(
 
 				while (lua_next(table->state(), (int)table->stackIndex())) {
 
-					auto value = LuaType::_pick(
+					Strong<LuaType> value = LuaType::_pick(
 						this->state());
 
 					key = key->replaced();
