@@ -85,28 +85,15 @@ State::~State() {
 	lua_close(*this);
 }
 
-Strong<Array<LuaType>> State::loadFile(
-	const String& filename,
-	bool doIt
+Strong<Array<LuaType>> State::inject(
+	CodeAction action,
+	const String& code
 ) noexcept(false) {
 	return this->_load(
 		[&]() {
-			return filename
-				.mapCString<int>([&](const char* filename) {
-					return doIt ? luaL_dofile(*this, filename) : luaL_loadfile(*this, filename);
-				});
-		});
-}
-
-Strong<Array<LuaType>> State::loadString(
-	const String& string,
-	bool doIt
-) noexcept(false) {
-	return this->_load(
-		[&]() {
-			return string
-				.mapCString<int>([&](const char* string) {
-					return doIt ? luaL_dostring(*this, string) : luaL_loadstring(*this, string);
+			return code
+				.mapCString<int>([&](const char* code) {
+					return action == CodeAction::run ? luaL_dostring(*this, code) : luaL_loadstring(*this, code);
 				});
 		});
 }

@@ -25,7 +25,9 @@ using namespace foundation::lua::exceptions;
 template<typename T>
 Strong<T> _to(const LuaType* value, LuaType::Kind kind) noexcept(false) {
 
-	if (value->kind() != LuaType::Kind::nil && value->kind() != kind) {
+	LuaType::Kind valueKind = value->kind();
+
+	if (valueKind != LuaType::Kind::nil && valueKind != kind) {
 		throw UnexpectedTypeException(
 			kind,
 			value->kind());

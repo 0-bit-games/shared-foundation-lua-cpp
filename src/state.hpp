@@ -69,6 +69,11 @@ namespace foundation::lua {
 
 			};
 
+			enum class CodeAction {
+				load = 0,
+				run
+			};
+
 			State(
 				Libraries libraries = Libraries::All);
 
@@ -77,14 +82,9 @@ namespace foundation::lua {
 
 			virtual ~State();
 
-			Strong<Array<types::LuaType>> loadFile(
-				const String& filename,
-				bool doIt = false
-			) noexcept(false);
-
-			Strong<Array<types::LuaType>> loadString(
-				const String& string,
-				bool doIt = false
+			Strong<Array<types::LuaType>> inject(
+				CodeAction action,
+				const String& code
 			) noexcept(false);
 
 			Strong<Global> global();
