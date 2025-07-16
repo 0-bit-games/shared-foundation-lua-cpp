@@ -11,12 +11,11 @@
 
 #include <time.h>
 
+#include "./lua/lua-5.4.7/include/lua.hpp"
 #include "./foundation/src/foundation.hpp"
 
 #include "./stack-trace-entry.hpp"
-
-#include "./lua/lua-5.4.7/include/lua.hpp"
-#include "./foundation/src/foundation.hpp"
+#include "./hook.hpp"
 
 namespace foundation::lua {
 
@@ -47,6 +46,8 @@ namespace foundation::lua {
 		friend class types::Caller;
 		friend class types::LuaTable;
 		friend class types::LuaUserFunction;
+
+		friend class Hook::Debug;
 
 		public:
 
@@ -131,6 +132,11 @@ namespace foundation::lua {
 				uint64_t maxLevel = 10
 			) noexcept(false);
 
+			void setHook(
+				Hook* hook,
+				Hook::Type type,
+				uint64_t count = 0);
+
 			inline operator lua_State*() {
 				return this->_l;
 			}
@@ -146,11 +152,6 @@ namespace foundation::lua {
 			struct StackItem {
 				types::LuaType* value;
 				bool autoPopped;
-			};
-
-			struct Call {
-				time_t startTime;
-				double timeout;
 			};
 
 #ifdef FOUNDATION_LUA_STACK_DEBUG
@@ -335,7 +336,7 @@ namespace foundation::lua {
 				::function<int()> loader
 			);
 
-			static void _hook(
+			static void _hookCallback(
 				lua_State* l,
 				lua_Debug* ar
 			);
@@ -344,7 +345,7 @@ namespace foundation::lua {
 			Data<StackItem*> _stack;
 			Data<size_t> _stackPointers;
 
-			Call* _currentCall;
+			Weak<Hook> _hook;
 
 	};
 

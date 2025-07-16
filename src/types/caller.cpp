@@ -73,9 +73,7 @@ Caller& Caller::argument(
 	return *this;
 }
 
-Strong<Array<LuaType>> Caller::exec(
-	double timeout
-) const noexcept(false) {
+Strong<Array<LuaType>> Caller::exec() const noexcept(false) {
 
 	bool success = this->_function
 		.state()
@@ -101,25 +99,10 @@ Strong<Array<LuaType>> Caller::exec(
 					._withStackPointer<bool>(
 						0,
 						[&]() {
-
-							State::Call call = {
-								time(nullptr),
-								timeout
-							};
-
-							if (timeout > 0.0) {
-								this->_function.state()._currentCall = &call;
-							}
-
 							return lua_pcall(fnc->state(), (int)this->_arguments.count(), 1, 0) == LUA_OK;
-
 						});
 
 			});
-
-	if (timeout > 0.0) {
-		this->_function.state()._currentCall = nullptr;
-	}
 
 	if (!success) {
 		String message = lua_tostring(this->_function.state(), -1);

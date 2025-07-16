@@ -74,8 +74,6 @@ State::State(
 		lua_pop(*this, 1);
 	}
 
-	lua_sethook(*this, State::_hook, LUA_MASKCOUNT, 1000);
-
 }
 
 State::~State() {
@@ -269,6 +267,23 @@ Array<StackTraceEntry> State::stackTrace(
 
 	return stackTrace;
 
+}
+
+void State::setHook(
+	Hook* hook,
+	Hook::Type type,
+	uint64_t count
+) {
+	
+	if (hook == nullptr) {
+		lua_sethook(*this, nullptr, 0, 0);
+		return;
+	}
+
+	this->_hook = hook;
+
+	lua_sethook(*this, State::_hookCallback, (int)type, (int)count);
+	
 }
 
 #ifdef FOUNDATION_LUA_STACK_DEBUG
@@ -645,22 +660,28 @@ Strong<Array<LuaType>> State::_load(
 
 }
 
-void State::_hook(
+void State::_hookCallback(
 	lua_State* L,
-	lua_Debug*
+	lua_Debug* debug
 ) {
 
 	State* state = *(State**)lua_getextraspace(L);
 
-	if (state->_currentCall != nullptr) {
-
-		time_t now = time(nullptr);
-
-		if (difftime(now, state->_currentCall->startTime) >= state->_currentCall->timeout) {
-			lua_sethook(*state, nullptr, 0, 0);
-			luaL_error(*state, "errors.engine.code.executionTimeout");
-		}
-
+	if (state->_hook.equals(nullptr)) {
+		lua_sethook(*state, nullptr, 0, 0);
+		return;
 	}
+
+	if (debug == nullptr) {
+		return;
+	}
+
+	Hook::Debug hookDebug(
+		*state,
+		*debug);
+
+	state->_hook->hook(
+		*state,
+		hookDebug);
 
 }

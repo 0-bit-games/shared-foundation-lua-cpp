@@ -10,6 +10,7 @@
 #define foundation_lua_hpp
 
 #include "./exceptions/exceptions.hpp"
+#include "./hook.hpp"
 #include "./stack-trace-entry.hpp"
 #include "./state.hpp"
 #include "./types/types.hpp"
