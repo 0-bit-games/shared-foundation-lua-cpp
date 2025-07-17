@@ -22,21 +22,22 @@ namespace foundation::lua {
 			class Debug {
 
 				friend class Hook;
-				
+
 				public:
 
 					enum class Event : uint8_t {
-						call     = LUA_HOOKCALL,
-						ret      = LUA_HOOKRET,
-						line     = LUA_HOOKLINE,
-						count    = LUA_HOOKCOUNT,
+						call      = LUA_HOOKCALL,
+						ret       = LUA_HOOKRET,
+						line      = LUA_HOOKLINE,
+						count     = LUA_HOOKCOUNT,
 						tailCount = LUA_HOOKTAILCALL
 					};
 
 					enum class SourceType : uint8_t {
 						file,
 						userDefined,
-						string
+						string,
+						unknown
 					};
 
 					enum class What : uint8_t {
@@ -54,9 +55,41 @@ namespace foundation::lua {
 						unknown
 					};
 
+					enum class Field : uint16_t {
+						sourceType          = 1 << 1,
+						source              = 1 << 1,
+						sourceShort         = 1 << 1,
+						firstLine           = 1 << 1,
+						lastLine            = 1 << 1,
+						currentLine         = 1 << 2,
+						what                = 1 << 1,
+						name                = 1 << 0,
+						nameWhat            = 1 << 0,
+						isTailCall          = 1 << 3,
+						upvalues            = 1 << 4,
+						isVariadicArguments = 1 << 4,
+						all                 = sourceType
+						                      | source
+						                      | sourceShort
+						                      | firstLine
+						                      | lastLine
+						                      | currentLine
+						                      | what
+						                      | name
+						                      | nameWhat
+						                      | isTailCall
+						                      | upvalues
+						                      | isVariadicArguments
+					};
+
 					Debug(
 						const State& state,
 						lua_Debug& debug);
+
+					void populate(
+						Field items) const;
+
+					Field populated() const;
 
 					Event event() const;
 
@@ -81,16 +114,12 @@ namespace foundation::lua {
 
 				private:
 
-					void _populate(
-						String what
-					) const;
-
 					void _cacheSource() const;
 
 					const State& _state;
 					lua_Debug& _debug;
 
-					mutable Data<uint32_t> _populated;
+					mutable Field _populated;
 
 					mutable SourceType _sourceType;
 					mutable Strong<String> _source;
@@ -103,8 +132,7 @@ namespace foundation::lua {
 				call     = 1 << static_cast<uint8_t>(Debug::Event::call),
 				ret      = 1 << static_cast<uint8_t>(Debug::Event::ret),
 				line     = 1 << static_cast<uint8_t>(Debug::Event::line),
-				count    = 1 << static_cast<uint8_t>(Debug::Event::count),
-				tailCall = 1 << static_cast<uint8_t>(Debug::Event::tailCount)
+				count    = 1 << static_cast<uint8_t>(Debug::Event::count)
 			};
 
 			virtual ~Hook() = default;
@@ -118,6 +146,14 @@ namespace foundation::lua {
 
 	inline Hook::Type operator|(Hook::Type a, Hook::Type b) {
 		return static_cast<Hook::Type>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
+	}
+
+	inline Hook::Debug::Field operator|(Hook::Debug::Field a, Hook::Debug::Field b) {
+		return static_cast<Hook::Debug::Field>(static_cast<uint16_t>(a) & static_cast<uint16_t>(b));
+	}
+
+	inline bool operator&(Hook::Debug::Field a, Hook::Debug::Field b) {
+		return (static_cast<uint16_t>(a) & static_cast<uint16_t>(b)) != 0;
 	}
 
 }

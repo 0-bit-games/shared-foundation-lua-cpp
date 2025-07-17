@@ -18,13 +18,72 @@ Hook::Debug::Debug(
 	const State& state,
 	lua_Debug& debug
 ) : _state(state),
-    _debug(debug) { }
+    _debug(debug),
+    _populated(static_cast<Field>(0)),
+    _sourceType(SourceType::unknown),
+    _source(nullptr),
+    _sourceShort(nullptr),
+    _name(nullptr) { }
+
+void Hook::Debug::populate(
+	Field items
+) const {
+
+	if (this->_populated & items) return;
+
+	String ar;
+
+	if (!(this->_populated & Field::sourceType) && items & Field::sourceType) {
+		this->_populated = this->_populated | Field::sourceType;
+		ar.append('S');
+	}
+
+	if (!(this->_populated & Field::currentLine) && items & Field::currentLine) {
+		this->_populated = this->_populated | Field::currentLine;
+		ar.append('l');
+	}
+
+	if (!(this->_populated & Field::name) && items & Field::name) {
+		this->_populated = this->_populated | Field::name;
+		ar.append('n');
+	}
+
+	if (!(this->_populated & Field::isTailCall) && items & Field::isTailCall) {
+		this->_populated = this->_populated | Field::isTailCall;
+		ar.append('t');
+	}
+
+	if (!(this->_populated & Field::upvalues) && items & Field::upvalues) {
+		this->_populated = this->_populated | Field::upvalues;
+		ar.append('u');
+	}
+
+	if (ar.length() > 0) {
+		ar.withCString(
+			[&](const char* ar) {
+				lua_getinfo(
+					this->_state._l,
+					ar,
+					&this->_debug);
+			});
+	}
+
+}
+
+Hook::Debug::Field Hook::Debug::populated() const {
+	return this->_populated;
+}
 
 Hook::Debug::Event Hook::Debug::event() const {
 	return static_cast<Event>(this->_debug.event);
 }
 
 Hook::Debug::SourceType Hook::Debug::sourceType() {
+
+	if (!(this->_populated & Field::sourceType)) {
+		this->populate(
+			Field::sourceType);
+	}
 
 	if (this->_source.equals(nullptr)) {
 		this->_cacheSource();
@@ -36,6 +95,11 @@ Hook::Debug::SourceType Hook::Debug::sourceType() {
 
 const String& Hook::Debug::source() const {
 
+	if (!(this->_populated & Field::source)) {
+		this->populate(
+			Field::source);
+	}
+
 	if (this->_source.equals(nullptr)) {
 		this->_cacheSource();
 	}
@@ -45,6 +109,11 @@ const String& Hook::Debug::source() const {
 }
 
 const String& Hook::Debug::sourceShort() const {
+
+	if (!(this->_populated & Field::sourceShort)) {
+		this->populate(
+			Field::sourceShort);
+	}
 
 	if (this->_sourceShort.equals(nullptr)) {
 		this->_sourceShort = Strong<String>(Data<uint8_t>(
@@ -57,16 +126,33 @@ const String& Hook::Debug::sourceShort() const {
 }
 
 int64_t Hook::Debug::firstLine() const {
+
+	if (!(this->_populated & Field::firstLine)) {
+		this->populate(
+			Field::firstLine);
+	}
+
 	return this->_debug.linedefined;
+
 }
 
 int64_t Hook::Debug::lastLine() const {
+
+	if (!(this->_populated & Field::lastLine)) {
+		this->populate(
+			Field::lastLine);
+	}
+
 	return this->_debug.lastlinedefined;
+
 }
 
 int64_t Hook::Debug::currentLine() const {
 
-	this->_populate("l");
+	if (!(this->_populated & Field::currentLine)) {
+		this->populate(
+			Field::currentLine);
+	}
 
 	return this->_debug.currentline;
 
@@ -74,7 +160,10 @@ int64_t Hook::Debug::currentLine() const {
 
 Hook::Debug::What Hook::Debug::what() const {
 
-	this->_populate("S");
+	if (!(this->_populated & Field::what)) {
+		this->populate(
+			Field::what);
+	}
 
 	switch (this->_debug.what[0]) {
 		case 'C':
@@ -91,8 +180,9 @@ Hook::Debug::What Hook::Debug::what() const {
 
 Strong<String> Hook::Debug::name() const {
 
-	if (this->_name.equals(nullptr)) {
-		this->_populate("n");
+	if (!(this->_populated & Field::name)) {
+		this->populate(
+			Field::name);
 	}
 
 	if (this->_name.equals(nullptr) && this->_debug.name != nullptr) {
@@ -106,6 +196,11 @@ Strong<String> Hook::Debug::name() const {
 }
 
 Hook::Debug::NameWhat Hook::Debug::nameWhat() const {
+
+	if (!(this->_populated & Field::nameWhat)) {
+		this->populate(
+			Field::nameWhat);
+	}
 
 	if (this->_debug.namewhat[0] == '\0') {
 		return NameWhat::unknown;
@@ -132,7 +227,10 @@ Hook::Debug::NameWhat Hook::Debug::nameWhat() const {
 
 bool Hook::Debug::isTailCall() const {
 
-	this->_populate("t");
+	if (!(this->_populated & Field::isTailCall)) {
+		this->populate(
+			Field::isTailCall);
+	}
 
 	return this->_debug.istailcall;
 
@@ -140,7 +238,10 @@ bool Hook::Debug::isTailCall() const {
 
 uint8_t Hook::Debug::upvalues() const {
 
-	this->_populate("u");
+	if (!(this->_populated & Field::upvalues)) {
+		this->populate(
+			Field::upvalues);
+	}
 
 	return this->_debug.nups;
 
@@ -148,37 +249,16 @@ uint8_t Hook::Debug::upvalues() const {
 
 bool Hook::Debug::isVariadicArguments() const {
 
-	this->_populate("u");
+	if (!(this->_populated & Field::isVariadicArguments)) {
+		this->populate(
+			Field::isVariadicArguments);
+	}
 
 	return this->_debug.isvararg != 0;
 
 }
 
-void Hook::Debug::_populate(
-	String what
-) const {
-	
-	String toPopulate;
-
-	for (size_t idx = 0 ; idx < what.length() ; idx++) {
-		if (!this->_populated.contains(what[idx])) {
-			toPopulate.append(what[idx]);
-			this->_populated.append(what[idx]);
-		}
-	}
-
-	if (toPopulate.length() == 0) return;
-
-	toPopulate
-		.withCString([&](const char* cWhat) {
-			lua_getinfo(this->_state._l, cWhat, &this->_debug);
-		});
-
-}
-
 void Hook::Debug::_cacheSource() const {
-
-	this->_populate("S");
 
 	Data<uint8_t> sourceData(
 		(uint8_t*)this->_debug.source,
