@@ -153,7 +153,7 @@ namespace foundation::lua {
 	}
 
 	inline bool operator&(Hook::Debug::Field a, Hook::Debug::Field b) {
-		return (static_cast<uint16_t>(a) & static_cast<uint16_t>(b)) != 0;
+		return (static_cast<uint8_t>(a) & static_cast<uint16_t>(b)) != 0;
 	}
 
 }
