@@ -24,8 +24,8 @@ using namespace foundation::tools;
 State::State(
 	Libraries libraries
 ) : _l(luaL_newstate()),
-	_stack(),
-	_stackPointers({ 0 }) {
+    _stack(),
+    _stackPointers({ 0 }) {
 
 	State** state = (State**)lua_getextraspace(_l);
 
@@ -34,42 +34,42 @@ State::State(
 	luaL_requiref(*this, "_G", luaopen_base, 1);
 	lua_pop(*this, 1);
 
-	if (((uint16_t)(libraries & Libraries::Package)) != 0) {
+	if (((uint16_t)(libraries & Libraries::package)) != 0) {
 		luaL_requiref(*this, LUA_LOADLIBNAME, luaopen_package, 1);
 		lua_pop(*this, 1);
 	}
 
-	if (((uint16_t)(libraries & Libraries::Coroutines)) != 0) {
+	if (((uint16_t)(libraries & Libraries::coroutines)) != 0) {
 		luaL_requiref(*this, LUA_COLIBNAME, luaopen_coroutine, 1);
 		lua_pop(*this, 1);
 	}
 
-	if (((uint16_t)(libraries & Libraries::IO)) != 0) {
+	if (((uint16_t)(libraries & Libraries::io)) != 0) {
 		luaL_requiref(*this, LUA_IOLIBNAME, luaopen_io, 1);
 		lua_pop(*this, 1);
 	}
 
-	if (((uint16_t)(libraries & Libraries::Math)) != 0) {
+	if (((uint16_t)(libraries & Libraries::math)) != 0) {
 		luaL_requiref(*this, LUA_MATHLIBNAME, luaopen_math, 1);
 		lua_pop(*this, 1);
 	}
 
-	if (((uint16_t)(libraries & Libraries::OS)) != 0) {
+	if (((uint16_t)(libraries & Libraries::os)) != 0) {
 		luaL_requiref(*this, LUA_OSLIBNAME, luaopen_os, 1);
 		lua_pop(*this, 1);
 	}
 
-	if (((uint16_t)(libraries & Libraries::String)) != 0) {
+	if (((uint16_t)(libraries & Libraries::string)) != 0) {
 		luaL_requiref(*this, LUA_STRLIBNAME, luaopen_string, 1);
 		lua_pop(*this, 1);
 	}
 
-	if (((uint16_t)(libraries & Libraries::Table)) != 0) {
+	if (((uint16_t)(libraries & Libraries::table)) != 0) {
 		luaL_requiref(*this, LUA_TABLIBNAME, luaopen_table, 1);
 		lua_pop(*this, 1);
 	}
 
-	if (((uint16_t)(libraries & Libraries::UTF8)) != 0) {
+	if (((uint16_t)(libraries & Libraries::utf8)) != 0) {
 		luaL_requiref(*this, LUA_UTF8LIBNAME, luaopen_utf8, 1);
 		lua_pop(*this, 1);
 	}
@@ -118,6 +118,7 @@ Strong<LuaType> State::nil() {
 	});
 
 	return this->_pushStackItem<LuaType>();
+
 }
 
 Strong<LuaBoolean> State::boolean(
@@ -247,20 +248,19 @@ Strong<LuaType> State::foundation(
 
 }
 
-Array<StackTraceEntry> State::stackTrace(
+Array<DebugInformation> State::stackTrace(
 	uint64_t maxLevel
 ) noexcept(false) {
 
-	Array<StackTraceEntry> stackTrace;
+	Array<DebugInformation> stackTrace;
 
 	lua_Debug debug;
 
 	for (uint64_t level = 0 ; (maxLevel == 0 || maxLevel < level) && lua_getstack(*this, level, &debug) ; level++) {
 
-		lua_getinfo(*this, "nSlu", &debug);
-
 		stackTrace
-			.append(Strong<StackTraceEntry>(
+			.append(Strong<DebugInformation>(
+				*this,
 				debug));
 
 	}
@@ -274,7 +274,7 @@ void State::setHook(
 	Hook::Type type,
 	uint64_t count
 ) {
-	
+
 	if (hook == nullptr) {
 		lua_sethook(*this, nullptr, 0, 0);
 		return;
@@ -283,7 +283,7 @@ void State::setHook(
 	this->_hook = hook;
 
 	lua_sethook(*this, State::_hookCallback, (int)type, (int)count);
-	
+
 }
 
 #ifdef FOUNDATION_LUA_STACK_DEBUG
@@ -676,12 +676,12 @@ void State::_hookCallback(
 		return;
 	}
 
-	Hook::Debug hookDebug(
+	DebugInformation debugInformation(
 		*state,
 		*debug);
 
 	state->_hook->hook(
 		*state,
-		hookDebug);
+		debugInformation);
 
 }

@@ -11,14 +11,13 @@ if(NOT LIBRARY_BUILD_TYPE)
 endif()
 
 add_library(foundation-lua ${LIBRARY_BUILD_TYPE}
+	src/debug-information.cpp
 	src/exceptions/compiler-exception.cpp
 	src/exceptions/exhausted-stack-exception.cpp
 	src/exceptions/not-supported-exception.cpp
 	src/exceptions/runtime-exception.cpp
 	src/exceptions/unexpected-type-exception.cpp
-	src/hook.cpp
 	src/global.cpp
-	src/stack-trace-entry.cpp
 	src/state.cpp
 	src/types/boolean.cpp
 	src/types/caller.cpp

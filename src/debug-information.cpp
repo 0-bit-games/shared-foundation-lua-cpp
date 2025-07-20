@@ -1,21 +1,19 @@
 //
-// hook.cpp
+// debug-information.cpp
 // foundation-lua
 //
 // Created by Kristian Trenskow on 2025/07/16
 // See license in LICENSE.
 //
 
-#include "./lua/lua-5.4.7/include/lua.hpp"
-
 #include "./state.hpp"
 
-#include "./hook.hpp"
+#include "./debug-information.hpp"
 
 using namespace foundation::lua;
 
-Hook::Debug::Debug(
-	const State& state,
+DebugInformation::DebugInformation(
+	State& state,
 	lua_Debug& debug
 ) : _state(state),
     _debug(debug),
@@ -25,11 +23,21 @@ Hook::Debug::Debug(
     _sourceShort(nullptr),
     _name(nullptr) { }
 
-void Hook::Debug::populate(
+DebugInformation::DebugInformation(
+	State& state
+) : _state(state),
+    _debug(),
+    _populated(static_cast<Field>(0)),
+    _sourceType(SourceType::unknown),
+    _source(nullptr),
+    _sourceShort(nullptr),
+    _name(nullptr) { }
+
+bool DebugInformation::populate(
 	Field items
 ) const {
 
-	if (this->_populated & items) return;
+	if (this->_populated & items) return true;
 
 	String ar;
 
@@ -59,56 +67,48 @@ void Hook::Debug::populate(
 	}
 
 	if (ar.length() > 0) {
+
 		ar.withCString(
 			[&](const char* ar) {
 				lua_getinfo(
-					this->_state._l,
+					this->_state,
 					ar,
-					&this->_debug);
+					*this);
 			});
+
+		return false;
+
 	}
+
+	return true;
 
 }
 
-Hook::Debug::Field Hook::Debug::populated() const {
+DebugInformation::Field DebugInformation::populated() const {
 	return this->_populated;
 }
 
-Hook::Debug::Event Hook::Debug::event() const {
+DebugInformation::Event DebugInformation::event() const {
 	return static_cast<Event>(this->_debug.event);
 }
 
-Hook::Debug::SourceType Hook::Debug::sourceType() {
+DebugInformation::SourceType DebugInformation::sourceType() {
 
-	if (!(this->_populated & Field::sourceType)) {
-		this->populate(
-			Field::sourceType);
-	}
-
-	if (this->_source.equals(nullptr)) {
-		this->_cacheSource();
-	}
+	this->_populateSource();
 
 	return this->_sourceType;
 
 }
 
-const String& Hook::Debug::source() const {
+const String& DebugInformation::source() const {
 
-	if (!(this->_populated & Field::source)) {
-		this->populate(
-			Field::source);
-	}
-
-	if (this->_source.equals(nullptr)) {
-		this->_cacheSource();
-	}
+	this->_populateSource();
 
 	return this->_source;
 
 }
 
-const String& Hook::Debug::sourceShort() const {
+const String& DebugInformation::sourceShort() const {
 
 	if (!(this->_populated & Field::sourceShort)) {
 		this->populate(
@@ -125,7 +125,7 @@ const String& Hook::Debug::sourceShort() const {
 
 }
 
-int64_t Hook::Debug::firstLine() const {
+int64_t DebugInformation::firstLine() const {
 
 	if (!(this->_populated & Field::firstLine)) {
 		this->populate(
@@ -136,7 +136,7 @@ int64_t Hook::Debug::firstLine() const {
 
 }
 
-int64_t Hook::Debug::lastLine() const {
+int64_t DebugInformation::lastLine() const {
 
 	if (!(this->_populated & Field::lastLine)) {
 		this->populate(
@@ -147,7 +147,7 @@ int64_t Hook::Debug::lastLine() const {
 
 }
 
-int64_t Hook::Debug::currentLine() const {
+int64_t DebugInformation::currentLine() const {
 
 	if (!(this->_populated & Field::currentLine)) {
 		this->populate(
@@ -158,7 +158,7 @@ int64_t Hook::Debug::currentLine() const {
 
 }
 
-Hook::Debug::What Hook::Debug::what() const {
+DebugInformation::What DebugInformation::what() const {
 
 	if (!(this->_populated & Field::what)) {
 		this->populate(
@@ -178,7 +178,7 @@ Hook::Debug::What Hook::Debug::what() const {
 
 }
 
-Strong<String> Hook::Debug::name() const {
+Strong<String> DebugInformation::name() const {
 
 	if (!(this->_populated & Field::name)) {
 		this->populate(
@@ -195,7 +195,7 @@ Strong<String> Hook::Debug::name() const {
 
 }
 
-Hook::Debug::NameWhat Hook::Debug::nameWhat() const {
+DebugInformation::NameWhat DebugInformation::nameWhat() const {
 
 	if (!(this->_populated & Field::nameWhat)) {
 		this->populate(
@@ -225,7 +225,7 @@ Hook::Debug::NameWhat Hook::Debug::nameWhat() const {
 
 }
 
-bool Hook::Debug::isTailCall() const {
+bool DebugInformation::isTailCall() const {
 
 	if (!(this->_populated & Field::isTailCall)) {
 		this->populate(
@@ -236,7 +236,7 @@ bool Hook::Debug::isTailCall() const {
 
 }
 
-uint8_t Hook::Debug::upvalues() const {
+uint8_t DebugInformation::upvalues() const {
 
 	if (!(this->_populated & Field::upvalues)) {
 		this->populate(
@@ -247,7 +247,7 @@ uint8_t Hook::Debug::upvalues() const {
 
 }
 
-bool Hook::Debug::isVariadicArguments() const {
+bool DebugInformation::isVariadicArguments() const {
 
 	if (!(this->_populated & Field::isVariadicArguments)) {
 		this->populate(
@@ -258,7 +258,14 @@ bool Hook::Debug::isVariadicArguments() const {
 
 }
 
-void Hook::Debug::_cacheSource() const {
+void DebugInformation::_populateSource() const {
+
+	if (this->populate(
+		Field::sourceType
+			| Field::source
+			| Field::sourceShort)) {
+		return;
+	}
 
 	Data<uint8_t> sourceData(
 		(uint8_t*)this->_debug.source,

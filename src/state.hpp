@@ -14,7 +14,6 @@
 #include "./lua/lua-5.4.7/include/lua.hpp"
 #include "./foundation/src/foundation.hpp"
 
-#include "./stack-trace-entry.hpp"
 #include "./hook.hpp"
 
 namespace foundation::lua {
@@ -47,26 +46,26 @@ namespace foundation::lua {
 		friend class types::LuaTable;
 		friend class types::LuaUserFunction;
 
-		friend class Hook::Debug;
+		friend class DebugInformation;
 
 		public:
 
-			enum class Libraries : uint16_t {
+			enum class Libraries : uint8_t {
 
-				None        = 0,
+				none        = 0,
 
-				Coroutines  = 1 << 0,
-				IO          = 1 << 1,
-				Math        = 1 << 2,
-				OS          = 1 << 3,
-				Package     = 1 << 4,
-				String      = 1 << 5,
-				Table       = 1 << 6,
-				UTF8        = 1 << 7,
+				coroutines  = 1 << 0,
+				io          = 1 << 1,
+				math        = 1 << 2,
+				os          = 1 << 3,
+				package     = 1 << 4,
+				string      = 1 << 5,
+				table       = 1 << 6,
+				utf8        = 1 << 7,
 
-				NonExternal = Coroutines | Math | String | Table | UTF8,
-				NonIO       = NonExternal | Package,
-				All         = NonIO | IO | OS
+				nonExternal = coroutines | math | string | table | utf8,
+				nonIo       = nonExternal | package,
+				all         = nonIo | io | os
 
 			};
 
@@ -76,7 +75,7 @@ namespace foundation::lua {
 			};
 
 			State(
-				Libraries libraries = Libraries::All);
+				Libraries libraries = Libraries::all);
 
 			State(
 				const State& other) = delete;
@@ -128,7 +127,7 @@ namespace foundation::lua {
 				const Type& value
 			) noexcept(false);
 
-			Array<StackTraceEntry> stackTrace(
+			Array<DebugInformation> stackTrace(
 				uint64_t maxLevel = 10
 			) noexcept(false);
 
@@ -350,11 +349,11 @@ namespace foundation::lua {
 	};
 
 	inline State::Libraries operator|(State::Libraries a, State::Libraries b) {
-		return static_cast<State::Libraries>(static_cast<uint16_t>(a) | static_cast<uint16_t>(b));
+		return static_cast<State::Libraries>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
 	}
 
 	inline State::Libraries operator&(State::Libraries a, State::Libraries b) {
-		return static_cast<State::Libraries>(static_cast<uint16_t>(a) & static_cast<uint16_t>(b));
+		return static_cast<State::Libraries>(static_cast<uint8_t>(a) & static_cast<uint8_t>(b));
 	}
 
 }

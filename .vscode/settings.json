@@ -1,10 +1,20 @@
 {
 	"cSpell.words": [
+		"COLIBNAME",
+		"dostring",
 		"Hashable",
+		"HOOKRET",
+		"luaopen",
+		"namewhat",
+		"pushcclosure",
+		"pushlightuserdata",
 		"randomizer",
+		"requiref",
 		"stringifiable",
 		"subarray",
 		"subdata",
+		"TLIGHTUSERDATA",
+		"Trenskow",
 		"uppercased"
 	],
 	"C_Cpp.intelliSenseEngine": "Tag Parser",
