@@ -1,6 +1,6 @@
 [submodule "src/lua"]
 	path = src/lua
-	url = git@github.com:trenskow/lua
+	url = git@github.com:0-bit-games/shared-lua-c
 [submodule "src/foundation"]
 	path = src/foundation
-	url = git@github.com:trenskow/foundation
+	url = git@github.com:0-bit-games/shared-foundation-cpp
