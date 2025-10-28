@@ -18,13 +18,13 @@ let package = Package(
 			targets: ["FoundationLuaCxx"])
 	],
 	dependencies: [
-		.package(path: "../shared-foundation-cpp")
+		.package(name: "SharedFoundationCxx", path: "../shared-foundation-cpp")
 	],
 	targets: [
 		.target(
 			name: "FoundationLuaCxx",
 			dependencies: [
-				.product(name: "FoundationCxx", package: "shared-foundation-cpp")
+				.product(name: "FoundationCxx", package: "SharedFoundationCxx")
 			],
 			path: ".",
 			exclude: [
