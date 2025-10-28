@@ -18,31 +18,31 @@ let package = Package(
 			targets: ["FoundationLuaCxx"])
 	],
 	dependencies: [
-		.package(url: "https://github.com/trenskow/foundation", branch: "main")
+		.package(path: "../shared-foundation-cpp")
 	],
 	targets: [
 		.target(
 			name: "FoundationLuaCxx",
 			dependencies: [
-				.product(name: "FoundationCxx", package: "foundation")
+				.product(name: "FoundationCxx", package: "shared-foundation-cpp")
 			],
 			path: ".",
 			exclude: [
 				"README.md",
 				"LICENSE",
 				"src/foundation",
-				"./src/lua/lua-5.4.7/src/luac.c",
-				"./src/lua/lua-5.4.7/src/lua.c",
-				"./src/lua/lua-5.4.7-tests",
+				"./src/lua/lua-5.4.8/src/luac.c",
+				"./src/lua/lua-5.4.8/src/lua.c",
+				"./src/lua/lua-5.4.8-tests",
 				"./src/lua/lua-config-package-tests"
 			],
 			publicHeadersPath: "./include",
 			cSettings: [
-				.headerSearchPath("./src/lua/lua-5.4.7/include"),
+				.headerSearchPath("./src/lua/lua-5.4.8/include"),
 				.define("LUA_USE_IOS")
 			],
 			cxxSettings: [
-				.headerSearchPath("./src/lua/lua-5.4.7/include"),
+				.headerSearchPath("./src/lua/lua-5.4.8/include"),
 				.define("LUA_USE_IOS")
 			],
 			swiftSettings: [

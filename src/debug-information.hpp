@@ -9,7 +9,7 @@
 #ifndef foundation_lua_debug_information_hpp
 #define foundation_lua_debug_information_hpp
 
-#include "./lua/lua-5.4.7/include/lua.hpp"
+#include "./lua/lua-5.4.8/include/lua.hpp"
 
 #include "./foundation/src/foundation.hpp"
 

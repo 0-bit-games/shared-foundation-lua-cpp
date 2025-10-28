@@ -6,7 +6,7 @@
 // See license in LICENSE.
 //
 
-#include "./lua/lua-5.4.7/include/lua.hpp"
+#include "./lua/lua-5.4.8/include/lua.hpp"
 
 #include "./exceptions/exceptions.hpp"
 #include "./global.hpp"
@@ -256,7 +256,7 @@ Array<DebugInformation> State::stackTrace(
 
 	lua_Debug debug;
 
-	for (uint64_t level = 0 ; (maxLevel == 0 || maxLevel < level) && lua_getstack(*this, level, &debug) ; level++) {
+	for (uint64_t level = 0 ; (maxLevel == 0 || maxLevel < level) && lua_getstack(*this, (int)level, &debug) ; level++) {
 
 		stackTrace
 			.append(Strong<DebugInformation>(
