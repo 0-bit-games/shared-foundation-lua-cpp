@@ -11,20 +11,20 @@
 import PackageDescription
 
 let package = Package(
-	name: "FoundationLuaCxx",
+	name: "SharedFoundationLuaCxx",
 	products: [
 		.library(
-			name: "FoundationLuaCxx",
-			targets: ["FoundationLuaCxx"])
+			name: "SharedFoundationLuaCxx",
+			targets: ["SharedFoundationLuaCxx"])
 	],
 	dependencies: [
 		.package(name: "SharedFoundationCxx", path: "../shared-foundation-cpp")
 	],
 	targets: [
 		.target(
-			name: "FoundationLuaCxx",
+			name: "SharedFoundationLuaCxx",
 			dependencies: [
-				.product(name: "FoundationCxx", package: "SharedFoundationCxx")
+				.product(name: "SharedFoundationCxx", package: "SharedFoundationCxx")
 			],
 			path: ".",
 			exclude: [
