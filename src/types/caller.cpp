@@ -9,6 +9,7 @@
 #include <time.h>
 
 #include "./function.hpp"
+#include "../global.hpp"
 #include "../exceptions/exceptions.hpp"
 
 #include "./caller.hpp"
@@ -76,16 +77,28 @@ Caller& Caller::argument(
 
 Strong<Array<LuaType>> Caller::exec() const noexcept(false) {
 
+	Strong<LuaType> originalErrorHandler = this->_function
+		.state()
+		.global()
+		->get("error");
+
+	this->_function
+		.state()
+		.global()
+		->set(
+			this->_function.state()
+				.string("error"),
+			this->_function
+				.state()
+				.function(
+					Caller::_errorHandler,
+						(void*)this)
+						.as<LuaType>());
+
 	bool success = this->_function
 		.state()
 		._withAutoPopped<bool>(
 			[&](const function<void(const LuaType&)> autoPop) {
-
-				Strong<LuaUserFunction> errorHandler = this->_function
-					.state()
-					.function(
-						Caller::_errorHandler,
-						(void*)this);
 
 				auto fnc = this->_function.push();
 
@@ -109,12 +122,20 @@ Strong<Array<LuaType>> Caller::exec() const noexcept(false) {
 							return lua_pcall(
 								fnc->state(),
 								(int)this->_arguments.count(),
-								1,
-								errorHandler->stackIndex()
+								LUA_MULTRET,
+								0
 							) == LUA_OK;
 						});
 
 			});
+
+	this->_function
+		.state()
+		.global()
+		->set(
+			this->_function.state()
+				.string("error"),
+			originalErrorHandler);
 
 	if (!success) {
 
@@ -161,10 +182,9 @@ Strong<Array<LuaType>> Caller::_errorHandler(
 	caller->_errorStackTrace = state
 		.stackTrace();
 
-	return Strong<Array<LuaType>>(
-		state.string(message)
-			.as<LuaType>(),
-		1);
+	throw RuntimeException(
+		message,
+		{});
 
 }
 
