@@ -10,6 +10,7 @@
 #define foundation_lua_caller_hpp
 
 #include "./type.hpp"
+#include "../debug-information.hpp"
 
 namespace foundation::lua::types {
 
@@ -47,13 +48,22 @@ namespace foundation::lua::types {
 
 			Strong<Array<LuaType>> exec() const noexcept(false);
 
+			Strong<Array<DebugInformation>> errorStackTrace() const noexcept; // nullable
+
 		private:
+
+			static Strong<Array<LuaType>> _errorHandler(
+				State& state,
+				void* context,
+				const Array<LuaType>& arguments);
 
 			Caller(
 				LuaFunction& function);
 
 			LuaFunction& _function;
 			Array<LuaType> _arguments;
+
+			Strong<Array<DebugInformation>> _errorStackTrace; // nullable
 
 	};
 

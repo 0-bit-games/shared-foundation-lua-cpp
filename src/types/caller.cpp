@@ -13,6 +13,7 @@
 
 #include "./caller.hpp"
 
+using namespace foundation::lua;
 using namespace foundation::lua::types;
 using namespace foundation::lua::exceptions;
 
@@ -80,6 +81,12 @@ Strong<Array<LuaType>> Caller::exec() const noexcept(false) {
 		._withAutoPopped<bool>(
 			[&](const function<void(const LuaType&)> autoPop) {
 
+				Strong<LuaUserFunction> errorHandler = this->_function
+					.state()
+					.function(
+						Caller::_errorHandler,
+						(void*)this);
+
 				auto fnc = this->_function.push();
 
 				autoPop(fnc);
@@ -99,7 +106,12 @@ Strong<Array<LuaType>> Caller::exec() const noexcept(false) {
 					._withStackPointer<bool>(
 						0,
 						[&]() {
-							return lua_pcall(fnc->state(), (int)this->_arguments.count(), 1, 0) == LUA_OK;
+							return lua_pcall(
+								fnc->state(),
+								(int)this->_arguments.count(),
+								1,
+								errorHandler->stackIndex()
+							) == LUA_OK;
 						});
 
 			});
@@ -107,7 +119,9 @@ Strong<Array<LuaType>> Caller::exec() const noexcept(false) {
 	if (!success) {
 		String message = lua_tostring(this->_function.state(), -1);
 		lua_pop(this->_function.state(), 1);
-		throw RuntimeException(message);
+		throw RuntimeException(
+			message,
+			this->errorStackTrace());
 	}
 
 	return LuaType::_pickUnclaimed(
@@ -115,6 +129,38 @@ Strong<Array<LuaType>> Caller::exec() const noexcept(false) {
 
 }
 
+Strong<Array<DebugInformation>> Caller::errorStackTrace() const noexcept {
+	return this->_errorStackTrace;
+}
+
+Strong<Array<LuaType>> Caller::_errorHandler(
+	State& state,
+	void* context,
+	const Array<LuaType>& arguments
+) {
+
+	Caller* caller = (Caller*)context;
+
+	String message = "(error object is not a string)";
+
+	if (arguments.count() > 0 && arguments[0]->kind() == LuaType::Kind::string) {
+		message = arguments[0]
+			->foundation(true)
+			.as<String>();
+	}
+
+	caller->_errorStackTrace = state
+		.stackTrace();
+
+	return Strong<Array<LuaType>>(
+		state.string(message)
+			.as<LuaType>(),
+		1);
+
+}
+
 Caller::Caller(
 	LuaFunction& function
-) : _function(function), _arguments() { }
+) : _function(function),
+	_arguments(),
+	_errorStackTrace(nullptr) { }
