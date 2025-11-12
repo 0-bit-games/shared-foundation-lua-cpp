@@ -117,11 +117,20 @@ Strong<Array<LuaType>> Caller::exec() const noexcept(false) {
 			});
 
 	if (!success) {
+
 		String message = lua_tostring(this->_function.state(), -1);
 		lua_pop(this->_function.state(), 1);
+
+		if (!this->_errorStackTrace.equals(nullptr)) {
+			throw RuntimeException(
+				message,
+				this->_errorStackTrace);
+		}
+
 		throw RuntimeException(
 			message,
-			this->errorStackTrace());
+			{});
+
 	}
 
 	return LuaType::_pickUnclaimed(

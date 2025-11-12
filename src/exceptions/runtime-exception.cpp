@@ -12,7 +12,7 @@ using namespace foundation::lua::exceptions;
 
 RuntimeException::RuntimeException(
 	const String& message,
-	Strong<Array<DebugInformation>> stackTrace
+	Array<DebugInformation> stackTrace
 ) : _message(message),
 	_stackTrace(stackTrace) { }
 
@@ -26,7 +26,7 @@ const String& RuntimeException::message() const {
 	return this->_message;
 }
 
-const Strong<Array<DebugInformation>> RuntimeException::stackTrace() const {
+Array<DebugInformation> RuntimeException::stackTrace() const {
 	return this->_stackTrace;
 }
 

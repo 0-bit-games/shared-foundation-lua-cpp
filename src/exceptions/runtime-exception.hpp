@@ -22,7 +22,7 @@ namespace foundation::lua::exceptions {
 
 			RuntimeException(
 				const String& message,
-				Strong<Array<DebugInformation>> stackTrace = nullptr);
+				Array<DebugInformation> stackTrace);
 
 			virtual ~RuntimeException();
 
@@ -30,12 +30,12 @@ namespace foundation::lua::exceptions {
 			virtual Exception* clone() const override;
 
 			const String& message() const;
-			const Strong<Array<DebugInformation>> stackTrace() const; // nullable
+			Array<DebugInformation> stackTrace() const;
 
 		private:
 
 			String _message;
-			Strong<Array<DebugInformation>> _stackTrace; // nullable
+			Array<DebugInformation> _stackTrace;
 
 	};
 
