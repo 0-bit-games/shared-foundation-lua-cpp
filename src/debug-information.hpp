@@ -82,11 +82,17 @@ namespace foundation::lua {
 			};
 
 			DebugInformation(
+				State& state);
+
+			DebugInformation(
 				State& state,
 				lua_Debug& debug);
 
 			DebugInformation(
-				State& state);
+				 const DebugInformation& other) = delete;
+
+			DebugInformation(
+				DebugInformation&& other) = delete;
 
 			virtual ~DebugInformation() = default;
 
@@ -94,16 +100,11 @@ namespace foundation::lua {
 				return this->_state;
 			}
 
-			bool populate(
-				Field items) const;
-
-			Field populated() const;
-
 			Event event() const;
 
 			SourceType sourceType();
-			const String& source() const;
-			const String& sourceShort() const;
+			Strong<String> source() const; // nullable
+			Strong<String> sourceShort() const; // nullable
 
 			int64_t firstLine() const;
 			int64_t lastLine() const;
@@ -120,24 +121,23 @@ namespace foundation::lua {
 			uint8_t upvalues() const;
 			bool isVariadicArguments() const;
 
-			inline operator lua_Debug*() const {
-				return &this->_debug;
-			}
-
 		private:
-
-			void _populateSource() const;
 
 			State& _state;
 			
-			mutable lua_Debug _debug;
-
-			mutable Field _populated;
-
-			mutable SourceType _sourceType;
-			mutable Strong<String> _source;
-			mutable Strong<String> _sourceShort;
-			mutable Strong<String> _name; // nullable
+			Event _event;
+			SourceType _sourceType;
+			Strong<String> _source; // nullable
+			Strong<String> _sourceShort; // nullable
+			int64_t _firstLine;
+			int64_t _lastLine;
+			int64_t _currentLine;
+			What _what;
+			Strong<String> _name; // nullable
+			NameWhat _nameWhat;
+			bool _isTailCall;
+			uint8_t _upvalues;
+			bool _isVariadicArguments;
 
 	};
 

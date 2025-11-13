@@ -256,7 +256,7 @@ Array<DebugInformation> State::stackTrace(
 
 	lua_Debug debug;
 
-	for (uint64_t level = 0 ; (maxLevel == 0 || maxLevel < level) && lua_getstack(*this, (int)level, &debug) ; level++) {
+	for (uint64_t level = 0 ; (maxLevel == 0 || maxLevel > level) && lua_getstack(*this, (int)level, &debug) ; level++) {
 
 		stackTrace
 			.append(Strong<DebugInformation>(
