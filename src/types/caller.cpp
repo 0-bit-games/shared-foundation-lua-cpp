@@ -17,6 +17,7 @@
 using namespace foundation::lua;
 using namespace foundation::lua::types;
 using namespace foundation::lua::exceptions;
+using namespace foundation::serialization;
 
 Caller& Caller::argument(
 	LuaBoolean& value
@@ -173,10 +174,16 @@ Strong<Array<LuaType>> Caller::_errorHandler(
 
 	String message = "(error object is not a string)";
 
-	if (arguments.count() > 0 && arguments[0]->kind() == LuaType::Kind::string) {
-		message = arguments[0]
-			->foundation(true)
-			.as<String>();
+	if (arguments.count() > 0) {
+		if (arguments[0]->kind() == LuaType::Kind::string) {
+			message = arguments[0]
+			->foundation()
+				.as<String>();
+		} else {
+			message = JSON().stringify(
+				arguments[0]
+					->foundation(true));
+		}
 	}
 
 	caller->_errorStackTrace = state
