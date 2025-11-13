@@ -11,6 +11,7 @@
 #include "./debug-information.hpp"
 
 using namespace foundation::lua;
+using namespace foundation::tools;
 
 DebugInformation::DebugInformation(
 	State& state
@@ -36,13 +37,8 @@ DebugInformation::DebugInformation(
 
 	if (debug.source != nullptr) {
 
-		Data<uint8_t> sourceData(
-			(uint8_t*)debug.source,
-			debug.srclen);
-
 		Strong<String> sourceString = String(
-			sourceData,
-			false);
+			debug.source);
 
 		if (sourceString->hasPrefix("@")) {
 			this->_sourceType = SourceType::file;
@@ -57,9 +53,19 @@ DebugInformation::DebugInformation(
 
 	}
 
-	this->_sourceShort = Strong<String>(Data<uint8_t>(
+	size_t shortSourceLen = 0;
+
+	for (size_t idx = 0 ; idx < LUA_IDSIZE && debug.short_src[idx] != '\0' ; idx++) {
+		shortSourceLen++;
+	}
+
+	Data<uint8_t> sourceShortData(
 		(uint8_t*)debug.short_src,
-		true));
+		shortSourceLen);
+
+	this->_sourceShort = Strong<String>(
+		sourceShortData,
+		false);
 
 	this->_firstLine = debug.linedefined;
 	this->_lastLine = debug.lastlinedefined;
@@ -78,9 +84,8 @@ DebugInformation::DebugInformation(
 	}
 
 	if (debug.name != nullptr) {
-		this->_name = Strong<String>(Data<uint8_t>(
-			(uint8_t*)debug.name,
-			true));
+		this->_name = Strong<String>(
+			debug.name);
 	}
 
 	switch (debug.namewhat[0]) {
@@ -98,6 +103,9 @@ DebugInformation::DebugInformation(
 			break;
 		case 'u':
 			this->_nameWhat = NameWhat::upvalue;
+			break;
+		case 'C':
+			this->_nameWhat = NameWhat::cFunction;
 			break;
 		default:
 			this->_nameWhat = NameWhat::unknown;

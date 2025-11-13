@@ -51,6 +51,7 @@ namespace foundation::lua {
 				method,
 				field,
 				upvalue,
+				cFunction,
 				unknown
 			};
 
