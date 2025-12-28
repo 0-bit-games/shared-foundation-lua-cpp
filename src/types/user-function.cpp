@@ -53,7 +53,7 @@ int LuaUserFunction::callback(
 									autoPop(result);
 								});
 
-							return result->count();
+							return (int)result->count();
 
 						});
 

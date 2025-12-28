@@ -12,12 +12,18 @@
 
 using namespace foundation::lua::exceptions;
 
+#if defined(_WIN32)
+#define strduplicate _strdup
+#else
+#define strduplicate strdup
+#endif
+
 CompilerException::CompilerException() :
 	_message(nullptr) { }
 
 CompilerException::CompilerException(
 	const char* message
-) : _message(strdup(message)) { }
+) : _message(strduplicate(message)) { }
 
 CompilerException::~CompilerException() {
 	if (this->_message != nullptr) {
@@ -26,7 +32,7 @@ CompilerException::~CompilerException() {
 }
 
 const char* CompilerException::description() const {
-	return this->_message ?: "Compilation failed.";
+	return this->_message == nullptr ? "Compilation failed." : this->_message;
 }
 
 Exception* CompilerException::clone() const {

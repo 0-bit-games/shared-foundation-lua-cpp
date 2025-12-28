@@ -185,7 +185,7 @@ int64_t LuaTable::count() {
 		return 0;
 	}
 
-	return result
+	return (int64_t)result
 		.as<LuaNumber>()
 		->value();
 

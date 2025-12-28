@@ -629,7 +629,7 @@ ssize_t State::_nextIndex() const {
 		return this->_stack.length() - this->_stackPointer();
 	}
 
-	return -this->_available();
+	return -((ssize_t)this->_available());
 
 }
 
