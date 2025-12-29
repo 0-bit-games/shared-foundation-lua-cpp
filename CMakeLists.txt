@@ -6,14 +6,6 @@ if(NOT TARGET foundation)
 	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/foundation/)
 endif()
 
-if(NOT LIBRARY_BUILD_TYPE)
-	if(WIN32)
-		set(LIBRARY_BUILD_TYPE STATIC)
-	else()
-		set(LIBRARY_BUILD_TYPE SHARED)
-	endif()
-endif()
-
 if (WIN32)
 	set(CMAKE_CXX_FLAGS "/std:c++20 /W4 /WX /EHsc")
 else()
@@ -23,7 +15,7 @@ else()
 	set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 endif()
 
-add_library(foundation-lua ${LIBRARY_BUILD_TYPE}
+add_library(foundation-lua STATIC
 	src/debug-information.cpp
 	src/exceptions/compiler-exception.cpp
 	src/exceptions/exhausted-stack-exception.cpp
@@ -47,22 +39,14 @@ if(NOT DEFINED LUA_VERSION)
 	set(LUA_VERSION "5.4.6")
 endif()
 
-if(${LIBRARY_BUILD_TYPE} STREQUAL "SHARED")
-	set(LUA_ENABLE_SHARED ON)
-else()
-	set(LUA_ENABLE_SHARED OFF)
-endif()
+set(LUA_ENABLE_SHARED OFF)
 
 set(LUA_ENABLE_TESTING OFF)
 set(LUA_BUILD_COMPILER OFF)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/lua)
 
-if(${LIBRARY_BUILD_TYPE} STREQUAL "SHARED")
-	target_link_libraries(foundation-lua lua_shared)
-else()
-	target_link_libraries(foundation-lua lua_static)
-endif()
+target_link_libraries(foundation-lua lua_static)
 
 target_compile_features(foundation-lua PRIVATE cxx_std_20)
 
