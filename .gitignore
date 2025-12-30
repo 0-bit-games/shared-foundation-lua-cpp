@@ -14,3 +14,8 @@ build.ninja
 .swiftpm/
 libfoundation-lua.a
 Package.resolved
+ALL_BUILD.*
+INSTALL.*
+foundation-lua.dir/
+foundation-lua.sln
+foundation-lua.vcxproj*
