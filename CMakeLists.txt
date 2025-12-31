@@ -19,9 +19,10 @@ endif()
 
 if(NOT LIBRARY_LINK_TYPE)
 	if(WIN32)
-			set(LIBRARY_LINK_TYPE STATIC)
+		set(LIBRARY_LINK_TYPE STATIC)
+	else()
+		set(LIBRARY_LINK_TYPE SHARED)
 	endif()
-	set(LIBRARY_LINK_TYPE SHARED)
 endif()
 
 add_library(foundation-lua ${LIBRARY_LINK_TYPE}
