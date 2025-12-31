@@ -48,12 +48,22 @@ if(NOT DEFINED LUA_VERSION)
 	set(LUA_VERSION "5.4.6")
 endif()
 
-set(LUA_ENABLE_SHARED OFF)
+if(${LIBRARY_LINK_TYPE} STREQUAL "SHARED")
+	set(LUA_ENABLE_SHARED ON)
+else()
+	set(LUA_ENABLE_SHARED OFF)
+endif()
 
 set(LUA_ENABLE_TESTING OFF)
 set(LUA_BUILD_COMPILER OFF)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/lua)
+
+if(${LIBRARY_LINK_TYPE} STREQUAL "SHARED")
+	target_link_libraries(foundation-lua lua_shared)
+else()
+	target_link_libraries(foundation-lua lua_static)
+endif()
 
 target_link_libraries(foundation-lua lua_static)
 
