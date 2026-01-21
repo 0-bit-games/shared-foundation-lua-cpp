@@ -19,6 +19,35 @@ using namespace foundation::lua::types;
 using namespace foundation::lua::exceptions;
 using namespace foundation::serialization;
 
+Caller::MomentaryReplacement::MomentaryReplacement(
+	Strong<LuaTable> target,
+	String key,
+	Strong<LuaType> replacement
+) : _target(
+		target.retained()),
+	_key(
+		key),
+	_original(
+		target->get(key)) {
+
+	this->_target->set(
+		this->_target
+			->state()
+			.string(this->_key),
+		replacement);
+
+}
+
+Caller::MomentaryReplacement::~MomentaryReplacement() {
+
+	this->_target->set(
+		this->_target
+			->state()
+			.string(this->_key),
+		this->_original);
+
+}
+
 Caller& Caller::argument(
 	LuaBoolean& value
 ) {
@@ -78,10 +107,18 @@ Caller& Caller::argument(
 
 Strong<Array<LuaType>> Caller::exec() const noexcept(false) {
 
-	Strong<LuaType> originalErrorHandler = this->_function
-		.state()
-		.global()
-		->get("error");
+	MomentaryReplacement errorHandlerReplacement(
+		this->_function
+			.state()
+			.global()
+			.as<LuaTable>(),
+		"error",
+		this->_function
+			.state()
+			.function(
+				Caller::_errorHandler,
+					(void*)this)
+					.as<LuaType>());
 
 	this->_function
 		.state()
@@ -130,14 +167,6 @@ Strong<Array<LuaType>> Caller::exec() const noexcept(false) {
 
 			});
 
-	this->_function
-		.state()
-		.global()
-		->set(
-			this->_function.state()
-				.string("error"),
-			originalErrorHandler);
-
 	if (!success) {
 
 		String message = lua_tostring(this->_function.state(), -1);
@@ -151,7 +180,8 @@ Strong<Array<LuaType>> Caller::exec() const noexcept(false) {
 
 		throw RuntimeException(
 			message,
-			{});
+			this->_function.state()
+				.stackTrace());
 
 	}
 

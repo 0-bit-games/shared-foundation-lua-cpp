@@ -52,6 +52,25 @@ namespace foundation::lua::types {
 
 		private:
 
+			class MomentaryReplacement {
+
+				public:
+
+					MomentaryReplacement(
+						Strong<LuaTable> target,
+						String key,
+						Strong<LuaType> replacement);
+
+					~MomentaryReplacement();
+
+				private:
+
+					Strong<LuaTable> _target;
+					String _key;
+					Strong<LuaType> _original;
+
+			};
+
 			static Strong<Array<LuaType>> _errorHandler(
 				State& state,
 				void* context,
