@@ -74,6 +74,11 @@ State::State(
 		lua_pop(*this, 1);
 	}
 
+	if (((uint16_t)(libraries & Libraries::debug)) != 0) {
+		luaL_requiref(*this, LUA_DBLIBNAME, luaopen_debug, 1);
+		lua_pop(*this, 1);
+	}
+
 }
 
 State::~State() {

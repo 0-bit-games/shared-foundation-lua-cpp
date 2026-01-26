@@ -50,7 +50,7 @@ namespace foundation::lua {
 
 		public:
 
-			enum class Libraries : uint8_t {
+			enum class Libraries : uint16_t {
 
 				none        = 0,
 
@@ -62,6 +62,7 @@ namespace foundation::lua {
 				string      = 1 << 5,
 				table       = 1 << 6,
 				utf8        = 1 << 7,
+				debug       = 1 << 8,
 
 				nonExternal = coroutines | math | string | table | utf8,
 				nonIo       = nonExternal | package,
