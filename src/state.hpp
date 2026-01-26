@@ -66,7 +66,7 @@ namespace foundation::lua {
 
 				nonExternal = coroutines | math | string | table | utf8,
 				nonIo       = nonExternal | package,
-				all         = nonIo | io | os
+				all         = nonIo | io | os | debug
 
 			};
 
@@ -350,11 +350,11 @@ namespace foundation::lua {
 	};
 
 	inline State::Libraries operator|(State::Libraries a, State::Libraries b) {
-		return static_cast<State::Libraries>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
+		return static_cast<State::Libraries>(static_cast<uint16_t>(a) | static_cast<uint16_t>(b));
 	}
 
 	inline State::Libraries operator&(State::Libraries a, State::Libraries b) {
-		return static_cast<State::Libraries>(static_cast<uint8_t>(a) & static_cast<uint8_t>(b));
+		return static_cast<State::Libraries>(static_cast<uint16_t>(a) & static_cast<uint16_t>(b));
 	}
 
 }
