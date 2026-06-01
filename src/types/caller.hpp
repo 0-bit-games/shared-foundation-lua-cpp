@@ -82,7 +82,7 @@ namespace foundation::lua::types {
 			LuaFunction& _function;
 			Array<LuaType> _arguments;
 
-			Strong<Array<DebugInformation>> _errorStackTrace; // nullable
+			mutable Strong<Array<DebugInformation>> _errorStackTrace; // nullable
 
 	};
 

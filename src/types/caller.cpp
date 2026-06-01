@@ -120,19 +120,6 @@ Strong<Array<LuaType>> Caller::exec() const noexcept(false) {
 					(void*)this)
 					.as<LuaType>());
 
-	this->_function
-		.state()
-		.global()
-		->set(
-			this->_function.state()
-				.string("error"),
-			this->_function
-				.state()
-				.function(
-					Caller::_errorHandler,
-						(void*)this)
-						.as<LuaType>());
-
 	bool success = this->_function
 		.state()
 		._withAutoPopped<bool>(
@@ -207,8 +194,8 @@ Strong<Array<LuaType>> Caller::_errorHandler(
 	if (arguments.count() > 0) {
 		if (arguments[0]->kind() == LuaType::Kind::string) {
 			message = arguments[0]
-			->foundation()
-				.as<String>();
+				->foundation()
+					.as<String>();
 		} else {
 			message = JSON().stringify(
 				arguments[0]
@@ -221,7 +208,7 @@ Strong<Array<LuaType>> Caller::_errorHandler(
 
 	throw RuntimeException(
 		message,
-		{});
+		caller->_errorStackTrace);
 
 }
 
