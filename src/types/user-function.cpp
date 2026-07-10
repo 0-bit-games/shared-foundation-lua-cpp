@@ -1,6 +1,6 @@
 //
-// user-function.hpp
-// foundation-lua
+// user-function.cpp
+// 0-bit-games-shared-foundation-lua-cpp
 //
 // Created by Kristian Trenskow on 2023/11/21
 // See license in LICENSE.

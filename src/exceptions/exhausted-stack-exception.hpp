@@ -1,6 +1,6 @@
 //
-// exhausted-exception.hpp
-// foundation-lua
+// exhausted-stack-exception.hpp
+// 0-bit-games-shared-foundation-lua-cpp
 //
 // Created by Kristian Trenskow on 2025/02/06
 // See license in LICENSE.

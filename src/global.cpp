@@ -1,8 +1,8 @@
 //
 // global.cpp
-// foundation-lua
+// 0-bit-games-shared-foundation-lua-cpp
 //
-// Created by Kristian Trenskow on 2023/11/11
+// Created by Kristian Trenskow on 2023/11/12
 // See license in LICENSE.
 //
 

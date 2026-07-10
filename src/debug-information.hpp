@@ -1,8 +1,8 @@
 //
 // debug-information.hpp
-// foundation-lua
+// 0-bit-games-shared-foundation-lua-cpp
 //
-// Created by Kristian Trenskow on 2025/07/16
+// Created by Kristian Trenskow on 2025/07/20
 // See license in LICENSE.
 //
 

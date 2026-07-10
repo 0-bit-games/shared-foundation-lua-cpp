@@ -1,6 +1,6 @@
 //
 // hook.hpp
-// foundation-lua
+// 0-bit-games-shared-foundation-lua-cpp
 //
 // Created by Kristian Trenskow on 2025/07/16
 // See license in LICENSE.
