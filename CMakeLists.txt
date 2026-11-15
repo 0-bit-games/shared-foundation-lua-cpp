@@ -27,7 +27,6 @@ endif()
 
 add_library(foundation-lua ${LIBRARY_LINK_TYPE}
 	src/debug-information.cpp
-	src/exceptions/allocation-exception.cpp
 	src/exceptions/compiler-exception.cpp
 	src/exceptions/exhausted-stack-exception.cpp
 	src/exceptions/not-supported-exception.cpp
