@@ -76,7 +76,8 @@ namespace foundation::lua {
 			};
 
 			State(
-				Libraries libraries = Libraries::all);
+				Libraries libraries = Libraries::all,
+				uint64_t memoryLimit = 0);
 
 			State(
 				const State& other) = delete;
@@ -136,6 +137,11 @@ namespace foundation::lua {
 				Hook* hook,
 				Hook::Type type,
 				uint64_t count = 0);
+
+			void setInstructionLimit(
+				uint64_t instructions);
+
+			uint64_t memoryUsed() const;
 
 			inline operator lua_State*() {
 				return this->_l;
@@ -341,11 +347,31 @@ namespace foundation::lua {
 				lua_Debug* ar
 			);
 
+			struct Allocation {
+				size_t used;
+				size_t limit;
+			};
+
+			static void* _allocator(
+				void* userData,
+				void* pointer,
+				size_t oldSize,
+				size_t newSize);
+
+			void _applyHook();
+
+			Allocation _allocation;
+
 			lua_State* _l;
 			Data<StackItem*> _stack;
 			Data<size_t> _stackPointers;
 
 			Weak<Hook> _hook;
+			Hook::Type _hookType;
+			uint64_t _hookCount;
+
+			bool _instructionLimited;
+			uint64_t _instructionsRemaining;
 
 	};
 

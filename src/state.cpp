@@ -16,16 +16,63 @@
 
 #include "./state.hpp"
 
+#define INSTRUCTION_LIMIT_STEP 1000
+
 using namespace foundation::lua;
 using namespace foundation::lua::types;
 using namespace foundation::lua::exceptions;
 using namespace foundation::tools;
 
+void* State::_allocator(
+	void* userData,
+	void* pointer,
+	size_t oldSize,
+	size_t newSize
+) {
+
+	Allocation* allocation = (Allocation*)userData;
+
+	size_t previous = pointer == nullptr ? 0 : oldSize;
+
+	if (newSize == 0) {
+		if (pointer != nullptr) {
+			allocation->used -= previous;
+			free(pointer);
+		}
+		return nullptr;
+	}
+
+	if (allocation->limit != 0 && newSize > previous && (allocation->used - previous) + newSize > allocation->limit) {
+		return nullptr;
+	}
+
+	void* result = realloc(pointer, newSize);
+
+	if (result == nullptr) {
+		return nullptr;
+	}
+
+	allocation->used = (allocation->used - previous) + newSize;
+
+	return result;
+
+}
+
 State::State(
-	Libraries libraries
-) : _l(luaL_newstate()),
+	Libraries libraries,
+	uint64_t memoryLimit
+) : _allocation({ 0, (size_t)memoryLimit }),
+    _l(lua_newstate(State::_allocator, &_allocation)),
     _stack(),
-    _stackPointers({ 0 }) {
+    _stackPointers({ 0 }),
+    _hookType((Hook::Type)0),
+    _hookCount(0),
+    _instructionLimited(false),
+    _instructionsRemaining(0) {
+
+	if (_l == nullptr) {
+		throw AllocationException();
+	}
 
 	State** state = (State**)lua_getextraspace(_l);
 
@@ -281,13 +328,49 @@ void State::setHook(
 ) {
 
 	if (hook == nullptr) {
+		this->_hookType = (Hook::Type)0;
+		this->_hookCount = 0;
+	} else {
+		this->_hook = hook;
+		this->_hookType = type;
+		this->_hookCount = count;
+	}
+
+	this->_applyHook();
+
+}
+
+void State::setInstructionLimit(
+	uint64_t instructions
+) {
+
+	this->_instructionLimited = instructions != 0;
+	this->_instructionsRemaining = instructions;
+
+	this->_applyHook();
+
+}
+
+uint64_t State::memoryUsed() const {
+	return this->_allocation.used;
+}
+
+void State::_applyHook() {
+
+	int mask = (int)this->_hookType;
+	int count = (int)this->_hookCount;
+
+	if (this->_instructionLimited) {
+		mask |= LUA_MASKCOUNT;
+		count = INSTRUCTION_LIMIT_STEP;
+	}
+
+	if (mask == 0 || (mask == LUA_MASKCOUNT && count == 0)) {
 		lua_sethook(*this, nullptr, 0, 0);
 		return;
 	}
 
-	this->_hook = hook;
-
-	lua_sethook(*this, State::_hookCallback, (int)type, (int)count);
+	lua_sethook(*this, State::_hookCallback, mask, count);
 
 }
 
@@ -672,8 +755,23 @@ void State::_hookCallback(
 
 	State* state = *(State**)lua_getextraspace(L);
 
+	if (debug != nullptr && debug->event == LUA_HOOKCOUNT && state->_instructionLimited) {
+
+		if (state->_instructionsRemaining <= INSTRUCTION_LIMIT_STEP) {
+			state->_instructionsRemaining = 0;
+			luaL_error(L, "Instruction limit exceeded");
+			return;
+		}
+
+		state->_instructionsRemaining -= INSTRUCTION_LIMIT_STEP;
+
+		if ((((int)state->_hookType) & LUA_MASKCOUNT) == 0) {
+			return;
+		}
+
+	}
+
 	if (state->_hook.equals(nullptr)) {
-		lua_sethook(*state, nullptr, 0, 0);
 		return;
 	}
 
