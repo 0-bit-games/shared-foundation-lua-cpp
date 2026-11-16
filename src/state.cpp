@@ -22,10 +22,17 @@ using namespace foundation::lua::exceptions;
 using namespace foundation::tools;
 
 State::State(
-	Libraries libraries
-) : _l(luaL_newstate()),
+	Libraries libraries,
+	size_t memoryLimit,
+	size_t memoryReserve
+) noexcept(false) : _allocation({ memoryLimit, memoryReserve, 0, 0, 0 }),
+    _l(lua_newstate(State::_allocate, &this->_allocation)),
     _stack(),
     _stackPointers({ 0 }) {
+
+	if (_l == nullptr) {
+		throw AllocationException();
+	}
 
 	State** state = (State**)lua_getextraspace(_l);
 
@@ -94,6 +101,7 @@ Strong<Array<LuaType>> State::inject(
 ) noexcept(false) {
 	return this->_load(
 		[&]() {
+			MemoryLimitScope scope(*this);
 			return code
 				.mapCString<int>([&](const char* code) {
 					return action == CodeAction::run ? luaL_dostring(*this, code) : luaL_loadstring(*this, code);
@@ -280,15 +288,48 @@ void State::setHook(
 	uint64_t count
 ) {
 
-	if (hook == nullptr) {
-		lua_sethook(*this, nullptr, 0, 0);
-		return;
-	}
-
 	this->_hook = hook;
 
-	lua_sethook(*this, State::_hookCallback, (int)type, (int)count);
+	this->_userHookMask = hook == nullptr ? 0 : (uint8_t)type;
+	this->_userHookCount = hook == nullptr ? 0 : count;
 
+	this->_applyHook();
+
+}
+
+void State::setInstructionLimit(
+	uint64_t instructions
+) {
+
+	this->_instructionLimited = instructions != 0;
+
+	this->_instructionsLeft = instructions > (uint64_t)INT64_MAX ? INT64_MAX : (int64_t)instructions;
+
+	this->_applyHook();
+
+}
+
+void State::setTimeLimit(
+	uint64_t milliseconds
+) {
+
+	this->_timeLimited = milliseconds != 0;
+	this->_timedOut = false;
+
+	if (this->_timeLimited) {
+		this->_deadline = Date() + Duration::fromMilliseconds((double)milliseconds);
+	}
+
+	this->_applyHook();
+
+}
+
+size_t State::memoryUsed() const {
+	return this->_allocation.used;
+}
+
+size_t State::peakMemory() const {
+	return this->_allocation.peak;
 }
 
 #ifdef FOUNDATION_LUA_STACK_DEBUG
@@ -665,6 +706,87 @@ Strong<Array<LuaType>> State::_load(
 
 }
 
+void* State::_allocate(
+	void* userData,
+	void* pointer,
+	size_t oldSize,
+	size_t newSize
+) {
+
+	Allocation* allocation = (Allocation*)userData;
+
+	size_t previous = pointer == nullptr ? 0 : oldSize;
+
+	if (newSize == 0) {
+
+		if (pointer != nullptr) {
+			allocation->used -= previous;
+		}
+
+		free(pointer);
+
+		return nullptr;
+
+	}
+
+	if (newSize > previous && allocation->limit != 0) {
+
+		size_t limit = allocation->limit + (allocation->depth > 0 ? 0 : allocation->reserve);
+
+		// Outside the scope the limit is higher, so back inside it `used` can be
+		// above the limit: then nothing may grow until memory has been freed.
+		size_t available = allocation->used >= limit ? 0 : limit - allocation->used;
+
+		if ((newSize - previous) > available) {
+			return nullptr;
+		}
+
+	}
+
+	void* result = realloc(pointer, newSize);
+
+	if (result == nullptr) {
+		return newSize <= previous ? pointer : nullptr;
+	}
+
+	allocation->used = allocation->used - previous + newSize;
+
+	if (allocation->used > allocation->peak) {
+		allocation->peak = allocation->used;
+	}
+
+	return result;
+
+}
+
+bool State::_deadlineReached() const {
+	return !this->_deadline.greaterThan(Date());
+}
+
+void State::_applyHook() {
+
+	int mask = this->_userHookMask;
+	int count = (int)this->_userHookCount;
+
+	if (this->_instructionLimited || this->_timeLimited) {
+
+		mask |= LUA_MASKCOUNT;
+
+		bool exhausted = (this->_instructionLimited && this->_instructionsLeft <= 0) || this->_timedOut;
+
+		count = exhausted ? 1 : this->_step();
+
+	}
+
+	if (mask == 0) {
+		lua_sethook(*this, nullptr, 0, 0);
+		return;
+	}
+
+	lua_sethook(*this, State::_hookCallback, mask, count);
+
+}
+
 void State::_hookCallback(
 	lua_State* L,
 	lua_Debug* debug
@@ -672,8 +794,52 @@ void State::_hookCallback(
 
 	State* state = *(State**)lua_getextraspace(L);
 
-	if (state->_hook.equals(nullptr)) {
-		lua_sethook(*state, nullptr, 0, 0);
+	if (debug != nullptr && debug->event == LUA_HOOKCOUNT) {
+
+		if (state->_instructionLimited && state->_instructionsLeft > 0) {
+
+			state->_instructionsLeft -= state->_step();
+
+			if (state->_instructionsLeft <= 0) {
+				state->_instructionsLeft = 0;
+				state->_applyHook();
+			}
+
+		}
+
+		if (state->_timeLimited && !state->_timedOut && state->_deadlineReached()) {
+			state->_timedOut = true;
+			state->_applyHook();
+		}
+
+		if (state->_instructionLimited && state->_instructionsLeft <= 0) {
+			luaL_error(L, "instruction limit exceeded");
+		}
+
+		if (state->_timedOut) {
+			luaL_error(L, "time limit exceeded");
+		}
+
+	}
+
+	state->_dispatchUserHook(L, debug);
+
+}
+
+void State::_dispatchUserHook(
+	lua_State*,
+	lua_Debug* debug
+) {
+
+	if (this->_userHookMask == 0) {
+		return;
+	}
+
+	// The hook is gone: remove it.
+	if (this->_hook.equals(nullptr)) {
+		this->_userHookMask = 0;
+		this->_userHookCount = 0;
+		this->_applyHook();
 		return;
 	}
 
@@ -681,12 +847,18 @@ void State::_hookCallback(
 		return;
 	}
 
+	int event = debug->event == LUA_HOOKTAILCALL ? LUA_HOOKCALL : debug->event;
+
+	if ((this->_userHookMask & (1 << event)) == 0) {
+		return;
+	}
+
 	DebugInformation debugInformation(
-		*state,
+		*this,
 		*debug);
 
-	state->_hook->hook(
-		*state,
+	this->_hook->hook(
+		*this,
 		debugInformation);
 
 }

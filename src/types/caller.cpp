@@ -144,6 +144,7 @@ Strong<Array<LuaType>> Caller::exec() const noexcept(false) {
 					._withStackPointer<bool>(
 						0,
 						[&]() {
+							State::MemoryLimitScope scope(this->_function.state());
 							return lua_pcall(
 								fnc->state(),
 								(int)this->_arguments.count(),

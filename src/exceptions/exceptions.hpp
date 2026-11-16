@@ -9,6 +9,7 @@
 #ifndef foundation_lua_exceptions_hpp
 #define foundation_lua_exceptions_hpp
 
+#include "./allocation-exception.hpp"
 #include "./compiler-exception.hpp"
 #include "./exhausted-stack-exception.hpp"
 #include "./runtime-exception.hpp"

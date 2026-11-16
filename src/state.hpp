@@ -16,6 +16,10 @@
 
 #include "./hook.hpp"
 
+#define FOUNDATION_LUA_STATE_INSTRUCTION_STEP 1000
+#define FOUNDATION_LUA_STATE_INSTRUCTION_STEP_TIMED 100
+#define FOUNDATION_LUA_STATE_MEMORY_RESERVE (8 * 1024 * 1024)
+
 namespace foundation::lua {
 
 	namespace types {
@@ -76,7 +80,10 @@ namespace foundation::lua {
 			};
 
 			State(
-				Libraries libraries = Libraries::all);
+				Libraries libraries = Libraries::all,
+				size_t memoryLimit = 0,
+				size_t memoryReserve = FOUNDATION_LUA_STATE_MEMORY_RESERVE
+			) noexcept(false);
 
 			State(
 				const State& other) = delete;
@@ -136,6 +143,15 @@ namespace foundation::lua {
 				Hook* hook,
 				Hook::Type type,
 				uint64_t count = 0);
+
+			void setInstructionLimit(
+				uint64_t instructions);
+
+			void setTimeLimit(
+				uint64_t milliseconds);
+
+			size_t memoryUsed() const;
+			size_t peakMemory() const;
 
 			inline operator lua_State*() {
 				return this->_l;
@@ -336,16 +352,72 @@ namespace foundation::lua {
 				::function<int()> loader
 			);
 
+			struct Allocation {
+				size_t limit; // 0 = unlimited.
+				size_t reserve; // Extra room for the engine itself, outside of `MemoryLimitScope`.
+				size_t used;
+				size_t peak;
+				size_t depth;
+			};
+
+			// While alive, Lua code runs under the memory limit. Outside it the
+			// engine may use `reserve` more, as errors raised by its own API calls
+			// are not protected by a `lua_pcall` and would abort the process.
+			struct MemoryLimitScope {
+
+				MemoryLimitScope(
+					State& state
+				) : _allocation(state._allocation) {
+					this->_allocation.depth++;
+				}
+
+				~MemoryLimitScope() {
+					this->_allocation.depth--;
+				}
+
+				Allocation& _allocation;
+
+			};
+
+			static void* _allocate(
+				void* userData,
+				void* pointer,
+				size_t oldSize,
+				size_t newSize);
+
+			void _applyHook();
+
+			bool _deadlineReached() const;
+
 			static void _hookCallback(
 				lua_State* l,
 				lua_Debug* ar
 			);
+
+			void _dispatchUserHook(
+				lua_State* l,
+				lua_Debug* ar);
+
+			inline int _step() const {
+				return this->_timeLimited ? FOUNDATION_LUA_STATE_INSTRUCTION_STEP_TIMED : FOUNDATION_LUA_STATE_INSTRUCTION_STEP;
+			}
+
+			Allocation _allocation;
 
 			lua_State* _l;
 			Data<StackItem*> _stack;
 			Data<size_t> _stackPointers;
 
 			Weak<Hook> _hook;
+			uint8_t _userHookMask = 0;
+			uint64_t _userHookCount = 0;
+
+			bool _instructionLimited = false;
+			int64_t _instructionsLeft = 0;
+
+			bool _timeLimited = false;
+			bool _timedOut = false;
+			Date _deadline;
 
 	};
 
