@@ -38,53 +38,72 @@ State::State(
 
 	*state = this;
 
-	luaL_requiref(*this, "_G", luaopen_base, 1);
-	lua_pop(*this, 1);
+	lua_pushcfunction(_l, State::_openLibraries);
+	lua_pushinteger(_l, (lua_Integer)(uint16_t)libraries);
 
-	if (((uint16_t)(libraries & Libraries::package)) != 0) {
-		luaL_requiref(*this, LUA_LOADLIBNAME, luaopen_package, 1);
-		lua_pop(*this, 1);
+	if (lua_pcall(_l, 1, 0, 0) != LUA_OK) {
+		lua_close(_l);
+		_l = nullptr;
+		throw AllocationException();
 	}
 
-	if (((uint16_t)(libraries & Libraries::coroutines)) != 0) {
-		luaL_requiref(*this, LUA_COLIBNAME, luaopen_coroutine, 1);
-		lua_pop(*this, 1);
+}
+
+int State::_openLibraries(
+	lua_State* l
+) {
+
+	uint16_t libraries = (uint16_t)lua_tointeger(l, 1);
+
+	luaL_requiref(l, "_G", luaopen_base, 1);
+	lua_pop(l, 1);
+
+	if ((libraries & (uint16_t)Libraries::package) != 0) {
+		luaL_requiref(l, LUA_LOADLIBNAME, luaopen_package, 1);
+		lua_pop(l, 1);
 	}
 
-	if (((uint16_t)(libraries & Libraries::io)) != 0) {
-		luaL_requiref(*this, LUA_IOLIBNAME, luaopen_io, 1);
-		lua_pop(*this, 1);
+	if ((libraries & (uint16_t)Libraries::coroutines) != 0) {
+		luaL_requiref(l, LUA_COLIBNAME, luaopen_coroutine, 1);
+		lua_pop(l, 1);
 	}
 
-	if (((uint16_t)(libraries & Libraries::math)) != 0) {
-		luaL_requiref(*this, LUA_MATHLIBNAME, luaopen_math, 1);
-		lua_pop(*this, 1);
+	if ((libraries & (uint16_t)Libraries::io) != 0) {
+		luaL_requiref(l, LUA_IOLIBNAME, luaopen_io, 1);
+		lua_pop(l, 1);
 	}
 
-	if (((uint16_t)(libraries & Libraries::os)) != 0) {
-		luaL_requiref(*this, LUA_OSLIBNAME, luaopen_os, 1);
-		lua_pop(*this, 1);
+	if ((libraries & (uint16_t)Libraries::math) != 0) {
+		luaL_requiref(l, LUA_MATHLIBNAME, luaopen_math, 1);
+		lua_pop(l, 1);
 	}
 
-	if (((uint16_t)(libraries & Libraries::string)) != 0) {
-		luaL_requiref(*this, LUA_STRLIBNAME, luaopen_string, 1);
-		lua_pop(*this, 1);
+	if ((libraries & (uint16_t)Libraries::os) != 0) {
+		luaL_requiref(l, LUA_OSLIBNAME, luaopen_os, 1);
+		lua_pop(l, 1);
 	}
 
-	if (((uint16_t)(libraries & Libraries::table)) != 0) {
-		luaL_requiref(*this, LUA_TABLIBNAME, luaopen_table, 1);
-		lua_pop(*this, 1);
+	if ((libraries & (uint16_t)Libraries::string) != 0) {
+		luaL_requiref(l, LUA_STRLIBNAME, luaopen_string, 1);
+		lua_pop(l, 1);
 	}
 
-	if (((uint16_t)(libraries & Libraries::utf8)) != 0) {
-		luaL_requiref(*this, LUA_UTF8LIBNAME, luaopen_utf8, 1);
-		lua_pop(*this, 1);
+	if ((libraries & (uint16_t)Libraries::table) != 0) {
+		luaL_requiref(l, LUA_TABLIBNAME, luaopen_table, 1);
+		lua_pop(l, 1);
 	}
 
-	if (((uint16_t)(libraries & Libraries::debug)) != 0) {
-		luaL_requiref(*this, LUA_DBLIBNAME, luaopen_debug, 1);
-		lua_pop(*this, 1);
+	if ((libraries & (uint16_t)Libraries::utf8) != 0) {
+		luaL_requiref(l, LUA_UTF8LIBNAME, luaopen_utf8, 1);
+		lua_pop(l, 1);
 	}
+
+	if ((libraries & (uint16_t)Libraries::debug) != 0) {
+		luaL_requiref(l, LUA_DBLIBNAME, luaopen_debug, 1);
+		lua_pop(l, 1);
+	}
+
+	return 0;
 
 }
 
@@ -633,7 +652,7 @@ void State::_popStackItem(
 					});
 
 				for (size_t rIdx = idx ; rIdx < this->_stack.length() ; rIdx++) {
-					if (this->_stack[idx]->value != nullptr) {
+					if (this->_stack[rIdx]->value != nullptr) {
 						this->_stack[rIdx]->value->_stackOffset--;
 					}
 				}

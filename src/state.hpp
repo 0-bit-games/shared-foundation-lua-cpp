@@ -360,9 +360,6 @@ namespace foundation::lua {
 				size_t depth;
 			};
 
-			// While alive, Lua code runs under the memory limit. Outside it the
-			// engine may use `reserve` more, as errors raised by its own API calls
-			// are not protected by a `lua_pcall` and would abort the process.
 			struct MemoryLimitScope {
 
 				MemoryLimitScope(
@@ -384,6 +381,9 @@ namespace foundation::lua {
 				void* pointer,
 				size_t oldSize,
 				size_t newSize);
+
+			static int _openLibraries(
+				lua_State* l);
 
 			void _applyHook();
 
